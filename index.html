@@ -33,7 +33,7 @@ button:hover { background:#2ea043; }
 <script>
 const secretKey = "aceppp1122"; // Admin key
 
-// Updated category mapping with retired tiers
+// Category mapping including retired tiers
 const categoryMap = { 
   "HT1":"T1","LT1":"T1","HT2":"T2","LT2":"T2","HT3":"T3","LT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5",
   "RHT3":"T3","RHT2":"T2","RHT1":"T1","RLT2":"T2","RLT1":"T1"
@@ -43,9 +43,9 @@ const categories = ["T1","T2","T3","T4","T5"];
 
 // Load players from localStorage or default
 let players = JSON.parse(localStorage.getItem("players")) || [
-  { name:"Swight", tier:"HT1", region:"EU", skin:"https://mc-heads.net/avatar/Swight/32" },
-  { name:"Marlowww", tier:"LT2", region:"NA", skin:"https://mc-heads.net/avatar/Marlowww/32" },
-  { name:"ItzRealMe", tier:"HT3", region:"AS", skin:"https://mc-heads.net/avatar/ItzRealMe/32" }
+  { name:"Swight", tier:"HT1", region:"EU", type:"premium", skin:"https://mc-heads.net/avatar/Swight/32" },
+  { name:"Marlowww", tier:"LT2", region:"NA", type:"premium", skin:"https://mc-heads.net/avatar/Marlowww/32" },
+  { name:"ItzRealMe", tier:"HT3", region:"AS", type:"premium", skin:"https://mc-heads.net/avatar/ItzRealMe/32" }
 ];
 
 // Save players to localStorage
@@ -57,7 +57,7 @@ function getHeadURL(name, type){
   return "https://mc-heads.net/avatar/Steve/32"; // crack account
 }
 
-// Render leaderboard with HT > LT > RHT/RLT sorting
+// Render leaderboard with proper ordering
 function render(){
   const container=document.getElementById("leaderboard-container");
   container.innerHTML="";
@@ -81,7 +81,6 @@ function render(){
         const bPriority = b.tier.startsWith("HT") ? 0 : b.tier.startsWith("LT") ? 1 : b.tier.startsWith("RHT") ? 2 : 3;
         if(aPriority !== bPriority) return aPriority - bPriority;
 
-        // Extract number from tier (e.g., HT3 -> 3, RLT1 -> 1)
         const aNum = parseInt(a.tier.match(/\d/)[0]);
         const bNum = parseInt(b.tier.match(/\d/)[0]);
         if(aNum !== bNum) return aNum - bNum;
@@ -89,12 +88,16 @@ function render(){
         return a.name.localeCompare(b.name);
       });
     catPlayers.forEach(p=>{
+      // Update premium skin if player changed name
+      if(p.type.toLowerCase()==="premium") p.skin = getHeadURL(p.name,"premium");
       const pDiv=document.createElement("div");
       pDiv.className="player-row";
       pDiv.innerHTML=`<img src="${p.skin}" alt="${p.name}"><span class="player-name">${p.name}<span class="tooltip">${p.region} | ${p.tier}</span></span>`;
       cols[cat].appendChild(pDiv);
     });
   });
+
+  savePlayers();
 }
 
 // Add player (admin)
@@ -108,10 +111,22 @@ function addPlayer(){
   if(!Object.keys(categoryMap).includes(tier) || !["AS","EU","ME","AU","NA"].includes(region) || !["premium","crack"].includes(type)){
     alert("Invalid input"); return;
   }
-  
-  const skin = getHeadURL(name,type);
-  players.push({name,tier,region,skin});
-  savePlayers();
+
+  // Check if player exists
+  const existingIndex = players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
+  if(existingIndex !== -1){
+    // Update tier/region/type and skin if premium
+    players[existingIndex].tier = tier;
+    players[existingIndex].region = region;
+    players[existingIndex].type = type;
+    if(type === "premium") players[existingIndex].skin = getHeadURL(name,"premium");
+    else players[existingIndex].skin = getHeadURL(name,"crack");
+  } else {
+    // Add new player
+    const skin = getHeadURL(name,type);
+    players.push({name,tier,region,type,skin});
+  }
+
   render();
 }
 
