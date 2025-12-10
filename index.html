@@ -76,6 +76,7 @@ button:hover {
 <div class="leaderboard" id="leaderboard-container"></div>
 
 <button onclick="addPlayer()">Add Player</button>
+<button onclick="removeAnyPlayer()">Remove Player</button>
 
 <script>
 const secretKey = "netherite123";
@@ -83,5 +84,95 @@ const secretKey = "netherite123";
 // Fixed tiers
 const tiers = ["HT1","LT1","HT2","LT2","HT3","LT3","HT4","LT4","HT5","LT5"];
 
-// Ini
+// Initial players
+let players = [
+  { name: "Swight", points: 290, tier: "HT1", skin: "https://mc-heads.net/avatar/Swight/32" },
+  { name: "Marlowww", points: 420, tier: "HT2", skin: "https://mc-heads.net/avatar/Marlowww/32" },
+  { name: "ItzRealMe", points: 330, tier: "LT1", skin: "https://mc-heads.net/avatar/ItzRealMe/32" },
+];
 
+// Render leaderboard
+function render() {
+  const container = document.getElementById("leaderboard-container");
+  container.innerHTML = "";
+
+  tiers.forEach(tier => {
+    const section = document.createElement("div");
+    section.className = "tier-section";
+    
+    const heading = document.createElement("h2");
+    heading.textContent = tier;
+    section.appendChild(heading);
+    
+    // Players in this tier sorted by points descending
+    const tierPlayers = players
+      .filter(p => p.tier === tier)
+      .sort((a,b) => b.points - a.points);
+
+    if (tierPlayers.length === 0) {
+      const emptyRow = document.createElement("div");
+      emptyRow.textContent = "No players yet";
+      emptyRow.style.fontStyle = "italic";
+      emptyRow.style.color = "#8b949e";
+      section.appendChild(emptyRow);
+    } else {
+      tierPlayers.forEach(p => {
+        const row = document.createElement("div");
+        row.className = "player-row";
+        row.innerHTML = `
+          <img src="${p.skin}" alt="${p.name}">
+          <span>${p.name} - ${p.points} pts</span>
+        `;
+        section.appendChild(row);
+      });
+    }
+
+    container.appendChild(section);
+  });
+}
+
+// Add player
+function addPlayer() {
+  const key = prompt("Enter secret key:");
+  if (key !== secretKey) {
+    alert("Unauthorized!");
+    return;
+  }
+
+  const name = prompt("Player name?");
+  const points = parseInt(prompt("Points?"));
+  let tier = prompt("Tier (HT1, LT1 ... HT5, LT5)?");
+  if (!tiers.includes(tier)) {
+    alert("Invalid tier! Must be one of: " + tiers.join(", "));
+    return;
+  }
+  const skin = prompt("Skin URL (leave blank for default)");
+  if (!name || !points || !tier) return;
+
+  players.push({ name, points, tier, skin: skin || `https://mc-heads.net/avatar/${name}/32` });
+  render();
+}
+
+// Remove player
+function removeAnyPlayer() {
+  const key = prompt("Enter secret key:");
+  if (key !== secretKey) {
+    alert("Unauthorized!");
+    return;
+  }
+
+  const name = prompt("Enter player name to remove:");
+  const index = players.findIndex(p => p.name === name);
+  if (index === -1) {
+    alert("Player not found!");
+    return;
+  }
+
+  players.splice(index, 1);
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
