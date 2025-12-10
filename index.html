@@ -5,101 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Netheritepot Leaderboard</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #0d1117;
-  color: #c9d1d9;
-  text-align: center;
-  padding: 20px;
-}
-
-h1 {
-  color: #ffcc00;
-  margin-bottom: 20px;
-}
-
-.leaderboard {
-  display: flex;
-  justify-content: space-between;
-  max-width: 1200px;
-  margin: 0 auto;
-  gap: 10px;
-  overflow-x: auto;
-}
-
-.tier-column {
-  flex: 1;
-  min-width: 180px;
-}
-
-.tier-column h2 {
-  text-align: center;
-  color: #58a6ff;
-  border-bottom: 1px solid #30363d;
-  padding-bottom: 5px;
-  margin-bottom: 5px;
-}
-
-.player-row {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-bottom: 4px;
-  position: relative;
-  overflow: hidden;
-}
-
-.player-row img {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 1px solid #fff;
-}
-
-.player-name {
-  transition: all 0.3s ease;
-  cursor: pointer;
-  white-space: nowrap;
-  display: inline-block;
-}
-
-.player-name:hover {
-  transform: translateX(10px);
-}
-
-.tooltip {
-  position: absolute;
-  left: 100%;
-  top: 0;
-  background: #238636;
-  color: #fff;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
-}
-
-.player-row:hover .tooltip {
-  opacity: 1;
-}
-
-button {
-  padding: 6px 12px;
-  margin-top: 10px;
-  background: #238636;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-button:hover {
-  background: #2ea043;
-}
+body { font-family: Arial,sans-serif; background:#0d1117; color:#c9d1d9; text-align:center; padding:20px; }
+h1 { color:#ffcc00; margin-bottom:20px; }
+.leaderboard { display:flex; justify-content:space-between; max-width:1200px; margin:0 auto; gap:10px; overflow-x:auto; }
+.tier-column { flex:1; min-width:180px; }
+.tier-column h2 { text-align:center; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:5px; margin-bottom:5px; }
+.player-row { display:flex; align-items:center; gap:5px; margin-bottom:4px; position:relative; overflow:hidden; }
+.player-row img { width:24px; height:24px; border-radius:50%; border:1px solid #fff; }
+.player-name { transition: all 0.3s ease; cursor:pointer; white-space:nowrap; display:inline-block; }
+.player-name:hover { transform:translateX(10px); }
+.tooltip { position:absolute; left:100%; top:0; background:#238636; color:#fff; padding:2px 6px; border-radius:4px; font-size:12px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+.player-row:hover .tooltip { opacity:1; }
+button { padding:6px 12px; margin-top:10px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; transition:0.3s; }
+button:hover { background:#2ea043; }
 </style>
 </head>
 <body>
@@ -107,109 +25,77 @@ button:hover {
 
 <div class="leaderboard" id="leaderboard-container"></div>
 
-<div id="admin-buttons" style="display:none; margin-top:20px;">
+<!-- Everyone can see buttons -->
+<div style="margin-top:20px;">
   <button onclick="addPlayer()">Add Player</button>
   <button onclick="removeAnyPlayer()">Remove Player</button>
 </div>
 
 <script>
-const secretKey = "aceppp1122"; // new admin key
-
-// Category mapping
-const categoryMap = {
-  "HT1":"T1","LT1":"T1",
-  "HT2":"T2","LT2":"T2",
-  "HT3":"T3","LT3":"T3",
-  "HT4":"T4","LT4":"T4",
-  "HT5":"T5","LT5":"T5"
-};
-
-// Categories
+const secretKey = "aceppp1122"; // Admin key
+const categoryMap = { "HT1":"T1","LT1":"T1","HT2":"T2","LT2":"T2","HT3":"T3","LT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5" };
 const categories = ["T1","T2","T3","T4","T5"];
-
-// Initial players
 let players = [
-  { name: "Swight", tier: "HT1", region: "EU", skin: "https://mc-heads.net/avatar/Swight/32" },
-  { name: "Marlowww", tier: "LT2", region: "NA", skin: "https://mc-heads.net/avatar/Marlowww/32" },
-  { name: "ItzRealMe", tier: "HT3", region: "AS", skin: "https://mc-heads.net/avatar/ItzRealMe/32" }
+  { name:"Swight", tier:"HT1", region:"EU", skin:"https://mc-heads.net/avatar/Swight/32" },
+  { name:"Marlowww", tier:"LT2", region:"NA", skin:"https://mc-heads.net/avatar/Marlowww/32" },
+  { name:"ItzRealMe", tier:"HT3", region:"AS", skin:"https://mc-heads.net/avatar/ItzRealMe/32" }
 ];
 
-// Admin check
-function checkAdmin() {
-  const key = prompt("Enter admin secret key (optional for view-only):");
-  if(key === secretKey) document.getElementById("admin-buttons").style.display="block";
-  else alert("View-only mode, cannot add/remove players.");
-}
-
 // Render leaderboard
-function render() {
-  const container = document.getElementById("leaderboard-container");
-  container.innerHTML = "";
-
-  // Create columns for categories
-  const cols = {};
-  categories.forEach(cat => {
-    const col = document.createElement("div");
-    col.className = "tier-column";
-    const h2 = document.createElement("h2");
-    h2.textContent = cat;
+function render(){
+  const container=document.getElementById("leaderboard-container");
+  container.innerHTML="";
+  const cols={};
+  categories.forEach(cat=>{
+    const col=document.createElement("div");
+    col.className="tier-column";
+    const h2=document.createElement("h2");
+    h2.textContent=cat;
     col.appendChild(h2);
     container.appendChild(col);
-    cols[cat] = col;
+    cols[cat]=col;
   });
-
-  // Determine max players per category
-  const maxPlayers = Math.max(...categories.map(cat => 
-    players.filter(p => categoryMap[p.tier]===cat).length
-  ));
-
-  // Add players row by row
+  const maxPlayers=Math.max(...categories.map(cat=>players.filter(p=>categoryMap[p.tier]===cat).length));
   for(let i=0;i<maxPlayers;i++){
     categories.forEach(cat=>{
-      const catPlayers = players.filter(p=>categoryMap[p.tier]===cat).sort((a,b)=>a.name.localeCompare(b.name));
+      const catPlayers=players.filter(p=>categoryMap[p.tier]===cat).sort((a,b)=>a.name.localeCompare(b.name));
       if(catPlayers[i]){
-        const p = catPlayers[i];
-        const pDiv = document.createElement("div");
+        const p=catPlayers[i];
+        const pDiv=document.createElement("div");
         pDiv.className="player-row";
-        pDiv.innerHTML = `
-          <img src="${p.skin}" alt="${p.name}">
-          <span class="player-name">${p.name}
-            <span class="tooltip">${p.region} | ${p.tier}</span>
-          </span>
-        `;
+        pDiv.innerHTML=`<img src="${p.skin}" alt="${p.name}"><span class="player-name">${p.name}<span class="tooltip">${p.region} | ${p.tier}</span></span>`;
         cols[cat].appendChild(pDiv);
       }
     });
   }
 }
 
-// Add player (admin)
+// Add player (asks for key)
 function addPlayer(){
-  const key = prompt("Enter admin secret key:");
-  if(key!==secretKey){ alert("Unauthorized!"); return;}
+  const key=prompt("Enter admin key to add player:");
+  if(key!==secretKey){ alert("Unauthorized!"); return; }
   const name=prompt("Player name?");
   const tier=prompt("Tier (HT1, LT1 ... HT5, LT5)?");
   const region=prompt("Region (AS, EU, ME, AU, NA)?").toUpperCase();
-  if(!Object.keys(categoryMap).includes(tier) || !["AS","EU","ME","AU","NA"].includes(region)){ alert("Invalid input"); return;}
-  const skin = prompt("Skin URL (leave blank for default)");
-  players.push({name,tier,region,skin: skin||`https://mc-heads.net/avatar/${name}/32`});
+  if(!Object.keys(categoryMap).includes(tier)||!["AS","EU","ME","AU","NA"].includes(region)){ alert("Invalid input"); return; }
+  const skin=prompt("Skin URL (leave blank for default)");
+  players.push({name,tier,region,skin:skin||`https://mc-heads.net/avatar/${name}/32`});
   render();
 }
 
-// Remove player (admin)
+// Remove player (asks for key)
 function removeAnyPlayer(){
-  const key = prompt("Enter admin secret key:");
-  if(key!==secretKey){ alert("Unauthorized!"); return;}
-  const name = prompt("Player name to remove:");
-  const index = players.findIndex(p=>p.name===name);
-  if(index===-1){ alert("Player not found!"); return;}
+  const key=prompt("Enter admin key to remove player:");
+  if(key!==secretKey){ alert("Unauthorized!"); return; }
+  const name=prompt("Enter player name to remove:");
+  const index=players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
+  if(index===-1){ alert("Player not found!"); return; }
   players.splice(index,1);
   render();
 }
 
 // Init
 render();
-checkAdmin();
 </script>
 </body>
 </html>
