@@ -45,7 +45,13 @@ let players = JSON.parse(localStorage.getItem("players")) || [
 // Save players to localStorage
 function savePlayers(){ localStorage.setItem("players", JSON.stringify(players)); }
 
-// Render leaderboard
+// Generate Minecraft head URL
+function getHeadURL(name, type){
+  if(type.toLowerCase() === "premium") return `https://mc-heads.net/avatar/${name}/32`;
+  return "https://mc-heads.net/avatar/Steve/32"; // crack account
+}
+
+// Render leaderboard with HT before LT
 function render(){
   const container=document.getElementById("leaderboard-container");
   container.innerHTML="";
@@ -59,25 +65,23 @@ function render(){
     container.appendChild(col);
     cols[cat]=col;
   });
-  const maxPlayers=Math.max(...categories.map(cat=>players.filter(p=>categoryMap[p.tier]===cat).length));
-  for(let i=0;i<maxPlayers;i++){
-    categories.forEach(cat=>{
-      const catPlayers=players.filter(p=>categoryMap[p.tier]===cat).sort((a,b)=>a.name.localeCompare(b.name));
-      if(catPlayers[i]){
-        const p=catPlayers[i];
-        const pDiv=document.createElement("div");
-        pDiv.className="player-row";
-        pDiv.innerHTML=`<img src="${p.skin}" alt="${p.name}"><span class="player-name">${p.name}<span class="tooltip">${p.region} | ${p.tier}</span></span>`;
-        cols[cat].appendChild(pDiv);
-      }
-    });
-  }
-}
 
-// Generate Minecraft head URL
-function getHeadURL(name, type){
-  if(type.toLowerCase() === "premium") return `https://mc-heads.net/avatar/${name}/32`;
-  return "https://mc-heads.net/avatar/Steve/32"; // crack account
+  categories.forEach(cat=>{
+    const catPlayers = players
+      .filter(p => categoryMap[p.tier] === cat)
+      .sort((a,b)=>{
+        const aType = a.tier.startsWith("HT") ? 0 : 1;
+        const bType = b.tier.startsWith("HT") ? 0 : 1;
+        if(aType !== bType) return aType - bType;
+        return a.name.localeCompare(b.name);
+      });
+    catPlayers.forEach(p=>{
+      const pDiv=document.createElement("div");
+      pDiv.className="player-row";
+      pDiv.innerHTML=`<img src="${p.skin}" alt="${p.name}"><span class="player-name">${p.name}<span class="tooltip">${p.region} | ${p.tier}</span></span>`;
+      cols[cat].appendChild(pDiv);
+    });
+  });
 }
 
 // Add player (admin)
@@ -88,7 +92,7 @@ function addPlayer(){
   const tier=prompt("Tier (HT1, LT1 ... HT5, LT5)?");
   const region=prompt("Region (AS, EU, ME, AU, NA)?").toUpperCase();
   const type=prompt("Account type (premium/crack)?").toLowerCase();
-  if(!Object.keys(categoryMap).includes(tier)||!["AS","EU","ME","AU","NA"].includes(region)||!["premium","crack"].includes(type)){
+  if(!Object.keys(categoryMap).includes(tier) || !["AS","EU","ME","AU","NA"].includes(region) || !["premium","crack"].includes(type)){
     alert("Invalid input"); return;
   }
   
