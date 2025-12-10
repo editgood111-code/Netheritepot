@@ -27,18 +27,13 @@ h1 {
   box-shadow: 0 0 15px #000;
   text-align: left;
   overflow-x: auto;
-}
-
-.tier-header {
   display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 10px;
+  gap: 10px;
 }
 
 .tier-column {
-  flex: 1;
   min-width: 150px;
+  flex: 1;
 }
 
 .tier-column h2 {
@@ -46,6 +41,7 @@ h1 {
   border-bottom: 1px solid #30363d;
   padding-bottom: 5px;
   margin-bottom: 5px;
+  text-align: center;
 }
 
 .player-row {
@@ -106,7 +102,7 @@ let players = [
 function checkAdmin() {
   const key = prompt("Enter admin secret key (optional for view-only):");
   if (key === secretKey) {
-    document.getElementById("admin-buttons").style.display = "block"; // show buttons only for admin
+    document.getElementById("admin-buttons").style.display = "block";
   } else {
     alert("You are in view-only mode. You cannot add or remove players.");
   }
@@ -117,45 +113,33 @@ function render() {
   const container = document.getElementById("leaderboard-container");
   container.innerHTML = "";
 
-  // Tier header
-  const header = document.createElement("div");
-  header.className = "tier-header";
-  tiers.forEach(tier => {
-    const col = document.createElement("div");
-    col.className = "tier-column";
-    const h2 = document.createElement("h2");
-    h2.textContent = tier;
-    col.appendChild(h2);
-    header.appendChild(col);
-  });
-  container.appendChild(header);
-
   // Determine max number of players in any tier
   const maxPlayers = Math.max(...tiers.map(t => players.filter(p => p.tier===t).length));
 
-  // Render each row
-  for (let i = 0; i < maxPlayers; i++) {
-    const rowDiv = document.createElement("div");
-    rowDiv.style.display = "flex";
-    rowDiv.style.justifyContent = "space-between";
-    rowDiv.style.gap = "20px";
-    rowDiv.style.marginBottom = "2px";
+  // Create tier columns
+  const columns = {};
+  tiers.forEach(t => {
+    const col = document.createElement("div");
+    col.className = "tier-column";
+    const h2 = document.createElement("h2");
+    h2.textContent = t;
+    col.appendChild(h2);
+    columns[t] = col;
+    container.appendChild(col);
+  });
 
-    tiers.forEach(tier => {
-      const colDiv = document.createElement("div");
-      colDiv.className = "tier-column";
-      const tierPlayers = players.filter(p => p.tier===tier).sort((a,b)=>a.name.localeCompare(b.name));
+  // Fill rows
+  for (let i = 0; i < maxPlayers; i++) {
+    tiers.forEach(t => {
+      const tierPlayers = players.filter(p => p.tier === t).sort((a,b)=>a.name.localeCompare(b.name));
       if (tierPlayers[i]) {
         const p = tierPlayers[i];
         const pDiv = document.createElement("div");
         pDiv.className = "player-row";
-        pDiv.innerHTML = `<img src="${p.skin}" alt="${p.name}"> <span>[${p.region}] ${p.name}</span>`;
-        colDiv.appendChild(pDiv);
+        pDiv.innerHTML = `<img src="${p.skin}" alt="${p.name}"><span>[${p.region}] ${p.name}</span>`;
+        columns[t].appendChild(pDiv);
       }
-      rowDiv.appendChild(colDiv);
     });
-
-    container.appendChild(rowDiv);
   }
 }
 
@@ -175,7 +159,6 @@ function addPlayer() {
     alert("Invalid tier!");
     return;
   }
-
   if (!["AS","EU","ME","AU","NA"].includes(region)) {
     alert("Invalid region!");
     return;
