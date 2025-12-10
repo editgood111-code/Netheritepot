@@ -7,6 +7,15 @@
 <style>
 body { font-family: Arial,sans-serif; background:#0d1117; color:#c9d1d9; text-align:center; padding:20px; }
 h1 { color:#ffcc00; margin-bottom:20px; }
+.search-container { margin-bottom:20px; }
+.search-container input { padding:6px 12px; border-radius:6px; border:none; width:200px; }
+.search-container button { padding:6px 12px; margin-left:5px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; }
+.search-container button:hover { background:#2ea043; }
+#search-result { margin-bottom:20px; display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; }
+.result-player { background:#161b22; padding:10px; border-radius:8px; display:flex; align-items:center; gap:10px; }
+.result-player img { width:40px; height:40px; border-radius:50%; border:1px solid #fff; }
+.tier-box { background:#238636; padding:2px 6px; border-radius:4px; display:flex; align-items:center; gap:4px; font-size:14px; }
+.tier-box img { width:16px; height:16px; }
 .leaderboard { display:flex; justify-content:space-between; max-width:1200px; margin:0 auto; gap:10px; overflow-x:auto; }
 .tier-column { flex:1; min-width:180px; }
 .tier-column h2 { text-align:center; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:5px; margin-bottom:5px; }
@@ -28,6 +37,13 @@ button:hover { background:#2ea043; }
 <body>
 <h1>Netheritepot Leaderboard</h1>
 
+<div class="search-container">
+  <input type="text" id="search-input" placeholder="Search player...">
+  <button onclick="searchPlayer()">Search</button>
+</div>
+
+<div id="search-result"></div>
+
 <div class="leaderboard" id="leaderboard-container"></div>
 
 <div style="margin-top:20px;">
@@ -36,23 +52,14 @@ button:hover { background:#2ea043; }
 </div>
 
 <script>
-// Admin key
 const secretKey = "aceppp1122";
-
-// Tier mapping
 const categoryMap = {
-  "HT1":"T1","LT1":"T1",
-  "HT2":"T2","LT2":"T2",
-  "HT3":"T3","LT3":"T3",
-  "HT4":"T4","LT4":"T4",
-  "HT5":"T5","LT5":"T5",
-  "RHT1":"T1","RLT1":"T1",
-  "RHT2":"T2","RLT2":"T2",
-  "RHT3":"T3","RLT3":"T3"
+  "HT1":"T1","LT1":"T1","HT2":"T2","LT2":"T2","HT3":"T3","LT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5",
+  "RHT1":"T1","RLT1":"T1","RHT2":"T2","RLT2":"T2","RHT3":"T3","RLT3":"T3"
 };
 const categories = ["T1","T2","T3","T4","T5"];
 
-// Firebase config
+// Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
   authDomain: "tierlist-3305a.firebaseapp.com",
@@ -62,27 +69,32 @@ const firebaseConfig = {
   messagingSenderId: "410709885310",
   appId: "1:410709885310:web:ceab1ca94e0f45513f332f"
 };
-
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const playersRef = db.ref("players");
 
-// Load players from Firebase
 let players = [];
-playersRef.on("value", snapshot => {
-  players = snapshot.val() || [];
+playersRef.once("value", snapshot => {
+  const data = snapshot.val();
+  if(data){
+    players = data;
+  } else {
+    // Default players
+    players = [
+      { name:"Swight", tier:"HT1", region:"EU", skin:"https://mc-heads.net/avatar/Swight/32", type:"premium" },
+      { name:"Marlowww", tier:"LT2", region:"NA", skin:"https://mc-heads.net/avatar/Marlowww/32", type:"premium" },
+      { name:"ItzRealMe", tier:"HT3", region:"AS", skin:"https://mc-heads.net/avatar/ItzRealMe/32", type:"premium" }
+    ];
+    playersRef.set(players);
+  }
   render();
 });
 
-// Save players to Firebase
+// Save
 function savePlayers(){ playersRef.set(players); }
 
-// Generate skin URL
-function getHeadURL(name, type){
-  if(type.toLowerCase() === "premium") return `https://mc-heads.net/avatar/${name}/32`;
-  return "https://mc-heads.net/avatar/Steve/32";
-}
+// Get head URL
+function getHeadURL(name,type){ return type==="premium"?`https://mc-heads.net/avatar/${name}/32`:"https://mc-heads.net/avatar/Steve/32"; }
 
 // Render leaderboard
 function render(){
@@ -99,15 +111,11 @@ function render(){
     cols[cat] = col;
   });
 
-  // Find max rows
   const maxPlayers = Math.max(...categories.map(cat=>players.filter(p=>categoryMap[p.tier]===cat).length));
-
-  // Add rows
   for(let i=0;i<maxPlayers;i++){
     categories.forEach(cat=>{
       const catPlayers = players.filter(p=>categoryMap[p.tier]===cat)
                                 .sort((a,b)=>{
-                                  // HT/RHT first, then LT/RLT
                                   const order = ["HT","RHT","LT","RLT"];
                                   return order.indexOf(a.tier.slice(0,2)) - order.indexOf(b.tier.slice(0,2));
                                 });
@@ -125,31 +133,30 @@ function render(){
   }
 }
 
-// Add player
+// Add / remove
 function addPlayer(){
   const key = prompt("Enter admin key:");
   if(key!==secretKey){ alert("Unauthorized!"); return; }
   const name = prompt("Player name?");
-  const tier = prompt("Tier (HT1, LT1, RHT1... etc)?");
+  const tier = prompt("Tier (HT1, LT1, RHT1...)?");
   const region = prompt("Region (AS, EU, ME, AU, NA)?").toUpperCase();
   const type = prompt("Account type (premium/crack)?").toLowerCase();
   if(!Object.keys(categoryMap).includes(tier) || !["AS","EU","ME","AU","NA"].includes(region) || !["premium","crack"].includes(type)){
     alert("Invalid input"); return;
   }
   const skin = getHeadURL(name,type);
-  // Update skin if premium and exists
   const existingIndex = players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
   if(existingIndex!==-1){
     if(type==="premium") players[existingIndex].skin = skin;
     players[existingIndex].tier = tier;
     players[existingIndex].region = region;
   } else {
-    players.push({name,tier,region,skin});
+    players.push({name,tier,region,skin,type});
   }
   savePlayers();
+  render();
 }
 
-// Remove player
 function removePlayer(){
   const key = prompt("Enter admin key:");
   if(key!==secretKey){ alert("Unauthorized!"); return; }
@@ -158,9 +165,27 @@ function removePlayer(){
   if(index===-1){ alert("Player not found!"); return; }
   players.splice(index,1);
   savePlayers();
+  render();
+}
+
+// Search
+function searchPlayer(){
+  const name = document.getElementById("search-input").value.toLowerCase();
+  const p = players.find(pl=>pl.name.toLowerCase()===name);
+  const resultDiv = document.getElementById("search-result");
+  resultDiv.innerHTML = "";
+  if(!p){ alert("Player not found"); return; }
+  const div = document.createElement("div");
+  div.className = "result-player";
+  div.innerHTML = `<img src="${p.skin}" alt="${p.name}">
+                   <span>${p.name}</span>
+                   <div class="tier-box">
+                     <img src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/7/70/Netherite_Helmet_JE2_BE2.png" alt="helmet">
+                     <span>${p.tier}</span>
+                   </div>`;
+  resultDiv.appendChild(div);
 }
 
 </script>
 </body>
 </html>
-
