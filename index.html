@@ -19,6 +19,11 @@ h1 { color:#ffcc00; margin-bottom:20px; }
 button { padding:6px 12px; margin-top:10px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; transition:0.3s; }
 button:hover { background:#2ea043; }
 </style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 </head>
 <body>
 <h1>Netheritepot Leaderboard</h1>
@@ -27,120 +32,135 @@ button:hover { background:#2ea043; }
 
 <div style="margin-top:20px;">
   <button onclick="addPlayer()">Add Player</button>
-  <button onclick="removeAnyPlayer()">Remove Player</button>
+  <button onclick="removePlayer()">Remove Player</button>
 </div>
 
 <script>
-const secretKey = "aceppp1122"; // Admin key
-const categoryMap = { 
-  "HT1":"T1","LT1":"T1","HT2":"T2","LT2":"T2","HT3":"T3","LT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5",
-  "RHT3":"T3","RHT2":"T2","RHT1":"T1","RLT2":"T2","RLT1":"T1"
+// Admin key
+const secretKey = "aceppp1122";
+
+// Tier mapping
+const categoryMap = {
+  "HT1":"T1","LT1":"T1",
+  "HT2":"T2","LT2":"T2",
+  "HT3":"T3","LT3":"T3",
+  "HT4":"T4","LT4":"T4",
+  "HT5":"T5","LT5":"T5",
+  "RHT1":"T1","RLT1":"T1",
+  "RHT2":"T2","RLT2":"T2",
+  "RHT3":"T3","RLT3":"T3"
 };
 const categories = ["T1","T2","T3","T4","T5"];
 
-// Default player list
-const defaultPlayers = [
-  { name:"Swight", tier:"HT1", region:"EU", type:"premium", skin:"https://mc-heads.net/avatar/Swight/32" },
-  { name:"Marlowww", tier:"LT2", region:"NA", type:"premium", skin:"https://mc-heads.net/avatar/Marlowww/32" },
-  { name:"ItzRealMe", tier:"HT3", region:"AS", type:"premium", skin:"https://mc-heads.net/avatar/ItzRealMe/32" }
-];
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
+  authDomain: "tierlist-3305a.firebaseapp.com",
+  databaseURL: "https://tierlist-3305a-default-rtdb.firebaseio.com",
+  projectId: "tierlist-3305a",
+  storageBucket: "tierlist-3305a.firebasestorage.app",
+  messagingSenderId: "410709885310",
+  appId: "1:410709885310:web:ceab1ca94e0f45513f332f"
+};
 
-// Load from localStorage or initialize
-let players = JSON.parse(localStorage.getItem("players"));
-if(!players || !Array.isArray(players) || players.length === 0){
-  players = defaultPlayers;
-  localStorage.setItem("players", JSON.stringify(players));
-}
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const playersRef = db.ref("players");
 
-// Save players
-function savePlayers(){ localStorage.setItem("players", JSON.stringify(players)); }
+// Load players from Firebase
+let players = [];
+playersRef.on("value", snapshot => {
+  players = snapshot.val() || [];
+  render();
+});
 
-// Get Minecraft skin URL
+// Save players to Firebase
+function savePlayers(){ playersRef.set(players); }
+
+// Generate skin URL
 function getHeadURL(name, type){
   if(type.toLowerCase() === "premium") return `https://mc-heads.net/avatar/${name}/32`;
-  return "https://mc-heads.net/avatar/Steve/32"; // crack account
+  return "https://mc-heads.net/avatar/Steve/32";
 }
 
 // Render leaderboard
 function render(){
-  const container=document.getElementById("leaderboard-container");
-  container.innerHTML="";
-  const cols={};
+  const container = document.getElementById("leaderboard-container");
+  container.innerHTML = "";
+  const cols = {};
   categories.forEach(cat=>{
-    const col=document.createElement("div");
-    col.className="tier-column";
-    const h2=document.createElement("h2");
-    h2.textContent=cat;
+    const col = document.createElement("div");
+    col.className = "tier-column";
+    const h2 = document.createElement("h2");
+    h2.textContent = cat;
     col.appendChild(h2);
     container.appendChild(col);
-    cols[cat]=col;
+    cols[cat] = col;
   });
 
-  categories.forEach(cat=>{
-    const catPlayers = players
-      .filter(p => categoryMap[p.tier] === cat)
-      .sort((a,b)=>{
-        // HT > LT > RHT > RLT
-        const aPriority = a.tier.startsWith("HT") ? 0 : a.tier.startsWith("LT") ? 1 : a.tier.startsWith("RHT") ? 2 : 3;
-        const bPriority = b.tier.startsWith("HT") ? 0 : b.tier.startsWith("LT") ? 1 : b.tier.startsWith("RHT") ? 2 : 3;
-        if(aPriority !== bPriority) return aPriority - bPriority;
-        const aNum = parseInt(a.tier.match(/\d/)[0]);
-        const bNum = parseInt(b.tier.match(/\d/)[0]);
-        if(aNum !== bNum) return aNum - bNum;
-        return a.name.localeCompare(b.name);
-      });
-    catPlayers.forEach(p=>{
-      // Update premium skin if name changed
-      if(p.type.toLowerCase() === "premium") p.skin = getHeadURL(p.name,"premium");
-      const pDiv=document.createElement("div");
-      pDiv.className="player-row";
-      pDiv.innerHTML=`<img src="${p.skin}" alt="${p.name}"><span class="player-name">${p.name}<span class="tooltip">${p.region} | ${p.tier}</span></span>`;
-      cols[cat].appendChild(pDiv);
+  // Find max rows
+  const maxPlayers = Math.max(...categories.map(cat=>players.filter(p=>categoryMap[p.tier]===cat).length));
+
+  // Add rows
+  for(let i=0;i<maxPlayers;i++){
+    categories.forEach(cat=>{
+      const catPlayers = players.filter(p=>categoryMap[p.tier]===cat)
+                                .sort((a,b)=>{
+                                  // HT/RHT first, then LT/RLT
+                                  const order = ["HT","RHT","LT","RLT"];
+                                  return order.indexOf(a.tier.slice(0,2)) - order.indexOf(b.tier.slice(0,2));
+                                });
+      if(catPlayers[i]){
+        const p = catPlayers[i];
+        const pDiv = document.createElement("div");
+        pDiv.className = "player-row";
+        pDiv.innerHTML = `<img src="${p.skin}" alt="${p.name}">
+                          <span class="player-name">${p.name}
+                            <span class="tooltip">${p.region} | ${p.tier}</span>
+                          </span>`;
+        cols[cat].appendChild(pDiv);
+      }
     });
-  });
-  savePlayers();
+  }
 }
 
-// Add player (admin)
+// Add player
 function addPlayer(){
-  const key=prompt("Enter admin key to add/update player:");
+  const key = prompt("Enter admin key:");
   if(key!==secretKey){ alert("Unauthorized!"); return; }
-  const name=prompt("Player name?");
-  const tier=prompt("Tier (HT1, LT1 ... HT5, LT5, RHT3, RHT2, RHT1, RLT2, RLT1)?");
-  const region=prompt("Region (AS, EU, ME, AU, NA)?").toUpperCase();
-  const type=prompt("Account type (premium/crack)?").toLowerCase();
+  const name = prompt("Player name?");
+  const tier = prompt("Tier (HT1, LT1, RHT1... etc)?");
+  const region = prompt("Region (AS, EU, ME, AU, NA)?").toUpperCase();
+  const type = prompt("Account type (premium/crack)?").toLowerCase();
   if(!Object.keys(categoryMap).includes(tier) || !["AS","EU","ME","AU","NA"].includes(region) || !["premium","crack"].includes(type)){
     alert("Invalid input"); return;
   }
-
+  const skin = getHeadURL(name,type);
+  // Update skin if premium and exists
   const existingIndex = players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
-  if(existingIndex !== -1){
+  if(existingIndex!==-1){
+    if(type==="premium") players[existingIndex].skin = skin;
     players[existingIndex].tier = tier;
     players[existingIndex].region = region;
-    players[existingIndex].type = type;
-    players[existingIndex].skin = getHeadURL(name,type);
   } else {
-    const skin = getHeadURL(name,type);
-    players.push({name,tier,region,type,skin});
+    players.push({name,tier,region,skin});
   }
-
-  render();
+  savePlayers();
 }
 
-// Remove player (admin)
-function removeAnyPlayer(){
-  const key=prompt("Enter admin key to remove player:");
+// Remove player
+function removePlayer(){
+  const key = prompt("Enter admin key:");
   if(key!==secretKey){ alert("Unauthorized!"); return; }
-  const name=prompt("Enter player name to remove:");
-  const index=players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
+  const name = prompt("Player name to remove:");
+  const index = players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
   if(index===-1){ alert("Player not found!"); return; }
   players.splice(index,1);
   savePlayers();
-  render();
 }
 
-// Init
-render();
 </script>
 </body>
 </html>
+
