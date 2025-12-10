@@ -32,32 +32,36 @@ button:hover { background:#2ea043; }
 
 <script>
 const secretKey = "aceppp1122"; // Admin key
-
-// Category mapping including retired tiers
 const categoryMap = { 
   "HT1":"T1","LT1":"T1","HT2":"T2","LT2":"T2","HT3":"T3","LT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5",
   "RHT3":"T3","RHT2":"T2","RHT1":"T1","RLT2":"T2","RLT1":"T1"
 };
-
 const categories = ["T1","T2","T3","T4","T5"];
 
-// Load players from localStorage or default
-let players = JSON.parse(localStorage.getItem("players")) || [
+// Default player list
+const defaultPlayers = [
   { name:"Swight", tier:"HT1", region:"EU", type:"premium", skin:"https://mc-heads.net/avatar/Swight/32" },
   { name:"Marlowww", tier:"LT2", region:"NA", type:"premium", skin:"https://mc-heads.net/avatar/Marlowww/32" },
   { name:"ItzRealMe", tier:"HT3", region:"AS", type:"premium", skin:"https://mc-heads.net/avatar/ItzRealMe/32" }
 ];
 
-// Save players to localStorage
+// Load from localStorage or initialize
+let players = JSON.parse(localStorage.getItem("players"));
+if(!players || !Array.isArray(players) || players.length === 0){
+  players = defaultPlayers;
+  localStorage.setItem("players", JSON.stringify(players));
+}
+
+// Save players
 function savePlayers(){ localStorage.setItem("players", JSON.stringify(players)); }
 
-// Generate Minecraft head URL
+// Get Minecraft skin URL
 function getHeadURL(name, type){
   if(type.toLowerCase() === "premium") return `https://mc-heads.net/avatar/${name}/32`;
   return "https://mc-heads.net/avatar/Steve/32"; // crack account
 }
 
-// Render leaderboard with proper ordering
+// Render leaderboard
 function render(){
   const container=document.getElementById("leaderboard-container");
   container.innerHTML="";
@@ -76,33 +80,30 @@ function render(){
     const catPlayers = players
       .filter(p => categoryMap[p.tier] === cat)
       .sort((a,b)=>{
-        // HT -> LT -> RHT -> RLT
+        // HT > LT > RHT > RLT
         const aPriority = a.tier.startsWith("HT") ? 0 : a.tier.startsWith("LT") ? 1 : a.tier.startsWith("RHT") ? 2 : 3;
         const bPriority = b.tier.startsWith("HT") ? 0 : b.tier.startsWith("LT") ? 1 : b.tier.startsWith("RHT") ? 2 : 3;
         if(aPriority !== bPriority) return aPriority - bPriority;
-
         const aNum = parseInt(a.tier.match(/\d/)[0]);
         const bNum = parseInt(b.tier.match(/\d/)[0]);
         if(aNum !== bNum) return aNum - bNum;
-
         return a.name.localeCompare(b.name);
       });
     catPlayers.forEach(p=>{
-      // Update premium skin if player changed name
-      if(p.type.toLowerCase()==="premium") p.skin = getHeadURL(p.name,"premium");
+      // Update premium skin if name changed
+      if(p.type.toLowerCase() === "premium") p.skin = getHeadURL(p.name,"premium");
       const pDiv=document.createElement("div");
       pDiv.className="player-row";
       pDiv.innerHTML=`<img src="${p.skin}" alt="${p.name}"><span class="player-name">${p.name}<span class="tooltip">${p.region} | ${p.tier}</span></span>`;
       cols[cat].appendChild(pDiv);
     });
   });
-
   savePlayers();
 }
 
 // Add player (admin)
 function addPlayer(){
-  const key=prompt("Enter admin key to add player:");
+  const key=prompt("Enter admin key to add/update player:");
   if(key!==secretKey){ alert("Unauthorized!"); return; }
   const name=prompt("Player name?");
   const tier=prompt("Tier (HT1, LT1 ... HT5, LT5, RHT3, RHT2, RHT1, RLT2, RLT1)?");
@@ -112,17 +113,13 @@ function addPlayer(){
     alert("Invalid input"); return;
   }
 
-  // Check if player exists
   const existingIndex = players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
   if(existingIndex !== -1){
-    // Update tier/region/type and skin if premium
     players[existingIndex].tier = tier;
     players[existingIndex].region = region;
     players[existingIndex].type = type;
-    if(type === "premium") players[existingIndex].skin = getHeadURL(name,"premium");
-    else players[existingIndex].skin = getHeadURL(name,"crack");
+    players[existingIndex].skin = getHeadURL(name,type);
   } else {
-    // Add new player
     const skin = getHeadURL(name,type);
     players.push({name,tier,region,type,skin});
   }
