@@ -20,7 +20,7 @@ h1 {
 
 .leaderboard {
   margin: 0 auto;
-  max-width: 700px;
+  max-width: 900px;
   background: #161b22;
   border-radius: 12px;
   padding: 20px;
@@ -28,8 +28,15 @@ h1 {
   text-align: left;
 }
 
-.tier-section {
+.tier-pair {
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 30px;
+  gap: 20px;
+}
+
+.tier-section {
+  flex: 1;
 }
 
 .tier-section h2 {
@@ -43,13 +50,14 @@ h1 {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 8px;
-  padding: 5px 0;
+  margin-bottom: 6px;
+  padding: 2px 0;
+  flex-wrap: wrap;
 }
 
 .player-row img {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   border: 1px solid #fff;
 }
@@ -75,58 +83,80 @@ button:hover {
 
 <div class="leaderboard" id="leaderboard-container"></div>
 
-<button onclick="addPlayer()">Add Player (Admin Only)</button>
-<button onclick="removeAnyPlayer()">Remove Player (Admin Only)</button>
+<div id="admin-buttons" style="display:none; margin-top:20px;">
+  <button onclick="addPlayer()">Add Player</button>
+  <button onclick="removeAnyPlayer()">Remove Player</button>
+</div>
 
 <script>
-const secretKey = "netherite123"; // Only you know this key
+const secretKey = "netherite123"; // Only admin knows
 
 // Fixed tiers
-const tiers = ["HT1","LT1","HT2","LT2","HT3","LT3","HT4","LT4","HT5","LT5"];
-
-// Initial players
-let players = [
-  { name: "Swight", points: 290, tier: "HT1", skin: "https://mc-heads.net/avatar/Swight/32" },
-  { name: "Marlowww", points: 420, tier: "HT2", skin: "https://mc-heads.net/avatar/Marlowww/32" },
-  { name: "ItzRealMe", points: 330, tier: "LT1", skin: "https://mc-heads.net/avatar/ItzRealMe/32" },
+const tierPairs = [
+  ["HT1","LT1"],
+  ["HT2","LT2"],
+  ["HT3","LT3"],
+  ["HT4","LT4"],
+  ["HT5","LT5"]
 ];
 
-// Render leaderboard grouped by tier
+// Initial players with region
+let players = [
+  { name: "Swight", tier: "HT1", region: "EU", skin: "https://mc-heads.net/avatar/Swight/32" },
+  { name: "Marlowww", tier: "LT1", region: "NA", skin: "https://mc-heads.net/avatar/Marlowww/32" },
+  { name: "ItzRealMe", tier: "HT2", region: "AS", skin: "https://mc-heads.net/avatar/ItzRealMe/32" },
+];
+
+// Admin check on page load
+function checkAdmin() {
+  const key = prompt("Enter admin secret key (optional for view-only):");
+  if (key === secretKey) {
+    document.getElementById("admin-buttons").style.display = "block"; // show buttons only for admin
+  } else {
+    alert("You are in view-only mode. You cannot add or remove players.");
+  }
+}
+
+// Render leaderboard
 function render() {
   const container = document.getElementById("leaderboard-container");
   container.innerHTML = "";
 
-  tiers.forEach(tier => {
-    const section = document.createElement("div");
-    section.className = "tier-section";
-    
-    const heading = document.createElement("h2");
-    heading.textContent = tier;
-    section.appendChild(heading);
-    
-    const tierPlayers = players
-      .filter(p => p.tier === tier)
-      .sort((a,b) => b.points - a.points);
+  tierPairs.forEach(pair => {
+    const pairDiv = document.createElement("div");
+    pairDiv.className = "tier-pair";
 
-    if (tierPlayers.length === 0) {
-      const emptyRow = document.createElement("div");
-      emptyRow.textContent = "No players yet";
-      emptyRow.style.fontStyle = "italic";
-      emptyRow.style.color = "#8b949e";
-      section.appendChild(emptyRow);
-    } else {
-      tierPlayers.forEach(p => {
-        const row = document.createElement("div");
-        row.className = "player-row";
-        row.innerHTML = `
-          <img src="${p.skin}" alt="${p.name}">
-          <span>${p.name} - ${p.points} pts</span>
-        `;
-        section.appendChild(row);
-      });
-    }
+    pair.forEach(tier => {
+      const section = document.createElement("div");
+      section.className = "tier-section";
 
-    container.appendChild(section);
+      const heading = document.createElement("h2");
+      heading.textContent = tier;
+      section.appendChild(heading);
+
+      const tierPlayers = players
+        .filter(p => p.tier === tier)
+        .sort((a,b) => a.name.localeCompare(b.name)); // optional alphabetical
+
+      if (tierPlayers.length === 0) {
+        const emptyRow = document.createElement("div");
+        emptyRow.textContent = "No players yet";
+        emptyRow.style.fontStyle = "italic";
+        emptyRow.style.color = "#8b949e";
+        section.appendChild(emptyRow);
+      } else {
+        tierPlayers.forEach(p => {
+          const row = document.createElement("div");
+          row.className = "player-row";
+          row.innerHTML = `<img src="${p.skin}" alt="${p.name}"> <span>[${p.region}] ${p.name}</span>`;
+          section.appendChild(row);
+        });
+      }
+
+      pairDiv.appendChild(section);
+    });
+
+    container.appendChild(pairDiv);
   });
 }
 
@@ -139,16 +169,23 @@ function addPlayer() {
   }
 
   const name = prompt("Player name?");
-  const points = parseInt(prompt("Points?"));
   let tier = prompt("Tier (HT1, LT1 ... HT5, LT5)?");
-  if (!tiers.includes(tier)) {
-    alert("Invalid tier! Must be one of: " + tiers.join(", "));
+  const region = prompt("Region (AS, EU, ME, AU, NA)?").toUpperCase();
+
+  if (!tierPairs.flat().includes(tier)) {
+    alert("Invalid tier! Must be one of: " + tierPairs.flat().join(", "));
     return;
   }
-  const skin = prompt("Skin URL (leave blank for default)");
-  if (!name || !points || !tier) return;
 
-  players.push({ name, points, tier, skin: skin || `https://mc-heads.net/avatar/${name}/32` });
+  if (!["AS","EU","ME","AU","NA"].includes(region)) {
+    alert("Invalid region! Must be one of: AS, EU, ME, AU, NA");
+    return;
+  }
+
+  const skin = prompt("Skin URL (leave blank for default)");
+  if (!name || !tier) return;
+
+  players.push({ name, tier, region, skin: skin || `https://mc-heads.net/avatar/${name}/32` });
   render();
 }
 
@@ -171,8 +208,10 @@ function removeAnyPlayer() {
   render();
 }
 
-// Initial render
+// Initial render and admin check
 render();
+checkAdmin();
+
 </script>
 </body>
 </html>
