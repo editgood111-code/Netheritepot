@@ -20,38 +20,39 @@ h1 {
 
 .leaderboard {
   margin: 0 auto;
-  max-width: 900px;
+  max-width: 1200px;
   background: #161b22;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 0 15px #000;
   text-align: left;
+  overflow-x: auto;
 }
 
-.tier-pair {
+.tier-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 30px;
   gap: 20px;
+  margin-bottom: 10px;
 }
 
-.tier-section {
+.tier-column {
   flex: 1;
+  min-width: 150px;
 }
 
-.tier-section h2 {
+.tier-column h2 {
   color: #58a6ff;
   border-bottom: 1px solid #30363d;
   padding-bottom: 5px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .player-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-  padding: 2px 0;
+  gap: 5px;
+  margin-bottom: 4px;
   flex-wrap: wrap;
 }
 
@@ -91,14 +92,8 @@ button:hover {
 <script>
 const secretKey = "netherite123"; // Only admin knows
 
-// Fixed tiers
-const tierPairs = [
-  ["HT1","LT1"],
-  ["HT2","LT2"],
-  ["HT3","LT3"],
-  ["HT4","LT4"],
-  ["HT5","LT5"]
-];
+// Fixed tiers in order
+const tiers = ["HT1","LT1","HT2","LT2","HT3","LT3","HT4","LT4","HT5","LT5"];
 
 // Initial players with region
 let players = [
@@ -122,42 +117,46 @@ function render() {
   const container = document.getElementById("leaderboard-container");
   container.innerHTML = "";
 
-  tierPairs.forEach(pair => {
-    const pairDiv = document.createElement("div");
-    pairDiv.className = "tier-pair";
+  // Tier header
+  const header = document.createElement("div");
+  header.className = "tier-header";
+  tiers.forEach(tier => {
+    const col = document.createElement("div");
+    col.className = "tier-column";
+    const h2 = document.createElement("h2");
+    h2.textContent = tier;
+    col.appendChild(h2);
+    header.appendChild(col);
+  });
+  container.appendChild(header);
 
-    pair.forEach(tier => {
-      const section = document.createElement("div");
-      section.className = "tier-section";
+  // Determine max number of players in any tier
+  const maxPlayers = Math.max(...tiers.map(t => players.filter(p => p.tier===t).length));
 
-      const heading = document.createElement("h2");
-      heading.textContent = tier;
-      section.appendChild(heading);
+  // Render each row
+  for (let i = 0; i < maxPlayers; i++) {
+    const rowDiv = document.createElement("div");
+    rowDiv.style.display = "flex";
+    rowDiv.style.justifyContent = "space-between";
+    rowDiv.style.gap = "20px";
+    rowDiv.style.marginBottom = "2px";
 
-      const tierPlayers = players
-        .filter(p => p.tier === tier)
-        .sort((a,b) => a.name.localeCompare(b.name)); // optional alphabetical
-
-      if (tierPlayers.length === 0) {
-        const emptyRow = document.createElement("div");
-        emptyRow.textContent = "No players yet";
-        emptyRow.style.fontStyle = "italic";
-        emptyRow.style.color = "#8b949e";
-        section.appendChild(emptyRow);
-      } else {
-        tierPlayers.forEach(p => {
-          const row = document.createElement("div");
-          row.className = "player-row";
-          row.innerHTML = `<img src="${p.skin}" alt="${p.name}"> <span>[${p.region}] ${p.name}</span>`;
-          section.appendChild(row);
-        });
+    tiers.forEach(tier => {
+      const colDiv = document.createElement("div");
+      colDiv.className = "tier-column";
+      const tierPlayers = players.filter(p => p.tier===tier).sort((a,b)=>a.name.localeCompare(b.name));
+      if (tierPlayers[i]) {
+        const p = tierPlayers[i];
+        const pDiv = document.createElement("div");
+        pDiv.className = "player-row";
+        pDiv.innerHTML = `<img src="${p.skin}" alt="${p.name}"> <span>[${p.region}] ${p.name}</span>`;
+        colDiv.appendChild(pDiv);
       }
-
-      pairDiv.appendChild(section);
+      rowDiv.appendChild(colDiv);
     });
 
-    container.appendChild(pairDiv);
-  });
+    container.appendChild(rowDiv);
+  }
 }
 
 // Add player (admin only)
@@ -169,16 +168,16 @@ function addPlayer() {
   }
 
   const name = prompt("Player name?");
-  let tier = prompt("Tier (HT1, LT1 ... HT5, LT5)?");
+  const tier = prompt("Tier (HT1, LT1 ... HT5, LT5)?");
   const region = prompt("Region (AS, EU, ME, AU, NA)?").toUpperCase();
 
-  if (!tierPairs.flat().includes(tier)) {
-    alert("Invalid tier! Must be one of: " + tierPairs.flat().join(", "));
+  if (!tiers.includes(tier)) {
+    alert("Invalid tier!");
     return;
   }
 
   if (!["AS","EU","ME","AU","NA"].includes(region)) {
-    alert("Invalid region! Must be one of: AS, EU, ME, AU, NA");
+    alert("Invalid region!");
     return;
   }
 
@@ -211,7 +210,6 @@ function removeAnyPlayer() {
 // Initial render and admin check
 render();
 checkAdmin();
-
 </script>
 </body>
 </html>
