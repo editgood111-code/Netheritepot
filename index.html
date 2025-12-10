@@ -75,11 +75,11 @@ button:hover {
 
 <div class="leaderboard" id="leaderboard-container"></div>
 
-<button onclick="addPlayer()">Add Player</button>
-<button onclick="removeAnyPlayer()">Remove Player</button>
+<button onclick="addPlayer()">Add Player (Admin Only)</button>
+<button onclick="removeAnyPlayer()">Remove Player (Admin Only)</button>
 
 <script>
-const secretKey = "netherite123";
+const secretKey = "netherite123"; // Only you know this key
 
 // Fixed tiers
 const tiers = ["HT1","LT1","HT2","LT2","HT3","LT3","HT4","LT4","HT5","LT5"];
@@ -91,7 +91,7 @@ let players = [
   { name: "ItzRealMe", points: 330, tier: "LT1", skin: "https://mc-heads.net/avatar/ItzRealMe/32" },
 ];
 
-// Render leaderboard
+// Render leaderboard grouped by tier
 function render() {
   const container = document.getElementById("leaderboard-container");
   container.innerHTML = "";
@@ -104,7 +104,6 @@ function render() {
     heading.textContent = tier;
     section.appendChild(heading);
     
-    // Players in this tier sorted by points descending
     const tierPlayers = players
       .filter(p => p.tier === tier)
       .sort((a,b) => b.points - a.points);
@@ -131,11 +130,11 @@ function render() {
   });
 }
 
-// Add player
+// Add player (admin only)
 function addPlayer() {
-  const key = prompt("Enter secret key:");
+  const key = prompt("Enter admin secret key:");
   if (key !== secretKey) {
-    alert("Unauthorized!");
+    alert("Unauthorized! Only admin can add players.");
     return;
   }
 
@@ -153,11 +152,11 @@ function addPlayer() {
   render();
 }
 
-// Remove player
+// Remove player (admin only)
 function removeAnyPlayer() {
-  const key = prompt("Enter secret key:");
+  const key = prompt("Enter admin secret key:");
   if (key !== secretKey) {
-    alert("Unauthorized!");
+    alert("Unauthorized! Only admin can remove players.");
     return;
   }
 
@@ -172,6 +171,7 @@ function removeAnyPlayer() {
   render();
 }
 
+// Initial render
 render();
 </script>
 </body>
