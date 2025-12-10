@@ -1,109 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NethOP Leaderboard</title>
-  <style>
-    body {
-      background: #0d1117;
-      color: white;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-    }
-    .leaderboard {
-      max-width: 800px;
-      margin: auto;
-      background: #161b22;
-      padding: 20px;
-      border-radius: 12px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #2a2f36;
-    }
-    th {
-      background: #1f242c;
-    }
-    .rank {
-      font-weight: bold;
-      color: #ffcc00;
-    }
-    button {
-      padding: 10px 16px;
-      margin-top: 15px;
-      background: #238636;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #2ea043;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netheritepot Leaderboard</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0d1117;
+  color: #c9d1d9;
+  text-align: center;
+  padding: 20px;
+}
+
+h1 {
+  color: #ffcc00;
+  margin-bottom: 20px;
+}
+
+.leaderboard {
+  margin: 0 auto;
+  max-width: 700px;
+  background: #161b22;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 0 15px #000;
+  text-align: left;
+}
+
+.tier-section {
+  margin-bottom: 30px;
+}
+
+.tier-section h2 {
+  color: #58a6ff;
+  border-bottom: 1px solid #30363d;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+.player-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 5px 0;
+}
+
+.player-row img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #fff;
+}
+
+button {
+  padding: 6px 12px;
+  margin-top: 10px;
+  background: #238636;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #2ea043;
+}
+</style>
 </head>
 <body>
-  <h1>NethOP Leaderboard</h1>
+<h1>Netheritepot Leaderboard</h1>
 
-  <div class="leaderboard">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Player</th>
-          <th>Points</th>
-          <th>Tier</th>
-        </tr>
-      </thead>
-      <tbody id="table-body"></tbody>
-    </table>
+<div class="leaderboard" id="leaderboard-container"></div>
 
-    <button onclick="addPlayer()">Add Player</button>
-  </div>
+<button onclick="addPlayer()">Add Player</button>
 
-  <script>
-    let players = [
-      { name: "Swight", points: 290, tier: "HT1" },
-      { name: "Marlowww", points: 420, tier: "HT0" },
-      { name: "ItzRealMe", points: 330, tier: "HT1" },
-    ];
+<script>
+const secretKey = "netherite123";
 
-    function render() {
-      const body = document.getElementById("table-body");
-      body.innerHTML = "";
-      players
-        .sort((a, b) => b.points - a.points)
-        .forEach((p, i) => {
-          body.innerHTML += `
-            <tr>
-              <td class="rank">${i + 1}</td>
-              <td>${p.name}</td>
-              <td>${p.points}</td>
-              <td>${p.tier}</td>
-            </tr>`;
-        });
-    }
+// Fixed tiers
+const tiers = ["HT1","LT1","HT2","LT2","HT3","LT3","HT4","LT4","HT5","LT5"];
 
-    function addPlayer() {
-      const name = prompt("Player name?");
-      const points = parseInt(prompt("Points?"));
-      const tier = prompt("Tier (e.g. HT1, HT2)?");
-      if (!name || !points || !tier) return;
-      players.push({ name, points, tier });
-      render();
-    }
+// Ini
 
-    render();
-  </script>
-</body>
-</html>
