@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NethOP Leaderboard</title>
+  <style>
+    body {
+      background: #0d1117;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .leaderboard {
+      max-width: 800px;
+      margin: auto;
+      background: #161b22;
+      padding: 20px;
+      border-radius: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #2a2f36;
+    }
+    th {
+      background: #1f242c;
+    }
+    .rank {
+      font-weight: bold;
+      color: #ffcc00;
+    }
+    button {
+      padding: 10px 16px;
+      margin-top: 15px;
+      background: #238636;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2ea043;
+    }
+  </style>
+</head>
+<body>
+  <h1>NethOP Leaderboard</h1>
+
+  <div class="leaderboard">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Player</th>
+          <th>Points</th>
+          <th>Tier</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+
+    <button onclick="addPlayer()">Add Player</button>
+  </div>
+
+  <script>
+    let players = [
+      { name: "Swight", points: 290, tier: "HT1" },
+      { name: "Marlowww", points: 420, tier: "HT0" },
+      { name: "ItzRealMe", points: 330, tier: "HT1" },
+    ];
+
+    function render() {
+      const body = document.getElementById("table-body");
+      body.innerHTML = "";
+      players
+        .sort((a, b) => b.points - a.points)
+        .forEach((p, i) => {
+          body.innerHTML += `
+            <tr>
+              <td class="rank">${i + 1}</td>
+              <td>${p.name}</td>
+              <td>${p.points}</td>
+              <td>${p.tier}</td>
+            </tr>`;
+        });
+    }
+
+    function addPlayer() {
+      const name = prompt("Player name?");
+      const points = parseInt(prompt("Points?"));
+      const tier = prompt("Tier (e.g. HT1, HT2)?");
+      if (!name || !points || !tier) return;
+      players.push({ name, points, tier });
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>
