@@ -25,7 +25,6 @@ button:hover { background:#2ea043; }
 
 <div class="leaderboard" id="leaderboard-container"></div>
 
-<!-- Everyone can see buttons -->
 <div style="margin-top:20px;">
   <button onclick="addPlayer()">Add Player</button>
   <button onclick="removeAnyPlayer()">Remove Player</button>
@@ -35,11 +34,16 @@ button:hover { background:#2ea043; }
 const secretKey = "aceppp1122"; // Admin key
 const categoryMap = { "HT1":"T1","LT1":"T1","HT2":"T2","LT2":"T2","HT3":"T3","LT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5" };
 const categories = ["T1","T2","T3","T4","T5"];
-let players = [
+
+// Load players from localStorage or default
+let players = JSON.parse(localStorage.getItem("players")) || [
   { name:"Swight", tier:"HT1", region:"EU", skin:"https://mc-heads.net/avatar/Swight/32" },
   { name:"Marlowww", tier:"LT2", region:"NA", skin:"https://mc-heads.net/avatar/Marlowww/32" },
   { name:"ItzRealMe", tier:"HT3", region:"AS", skin:"https://mc-heads.net/avatar/ItzRealMe/32" }
 ];
+
+// Save players to localStorage
+function savePlayers(){ localStorage.setItem("players", JSON.stringify(players)); }
 
 // Render leaderboard
 function render(){
@@ -70,7 +74,12 @@ function render(){
   }
 }
 
-// Add player (asks for key)
+// Generate Minecraft head URL from player name
+function getHeadURL(name){
+  return `https://mc-heads.net/avatar/${name}/32`;
+}
+
+// Add player (admin)
 function addPlayer(){
   const key=prompt("Enter admin key to add player:");
   if(key!==secretKey){ alert("Unauthorized!"); return; }
@@ -78,12 +87,16 @@ function addPlayer(){
   const tier=prompt("Tier (HT1, LT1 ... HT5, LT5)?");
   const region=prompt("Region (AS, EU, ME, AU, NA)?").toUpperCase();
   if(!Object.keys(categoryMap).includes(tier)||!["AS","EU","ME","AU","NA"].includes(region)){ alert("Invalid input"); return; }
-  const skin=prompt("Skin URL (leave blank for default)");
-  players.push({name,tier,region,skin:skin||`https://mc-heads.net/avatar/${name}/32`});
+  
+  // Automatically generate head URL
+  const skin = getHeadURL(name);
+  
+  players.push({name,tier,region,skin});
+  savePlayers();
   render();
 }
 
-// Remove player (asks for key)
+// Remove player (admin)
 function removeAnyPlayer(){
   const key=prompt("Enter admin key to remove player:");
   if(key!==secretKey){ alert("Unauthorized!"); return; }
@@ -91,6 +104,7 @@ function removeAnyPlayer(){
   const index=players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
   if(index===-1){ alert("Player not found!"); return; }
   players.splice(index,1);
+  savePlayers();
   render();
 }
 
