@@ -74,9 +74,10 @@ function render(){
   }
 }
 
-// Generate Minecraft head URL from player name
-function getHeadURL(name){
-  return `https://mc-heads.net/avatar/${name}/32`;
+// Generate Minecraft head URL
+function getHeadURL(name, type){
+  if(type.toLowerCase() === "premium") return `https://mc-heads.net/avatar/${name}/32`;
+  return "https://mc-heads.net/avatar/Steve/32"; // crack account
 }
 
 // Add player (admin)
@@ -86,11 +87,12 @@ function addPlayer(){
   const name=prompt("Player name?");
   const tier=prompt("Tier (HT1, LT1 ... HT5, LT5)?");
   const region=prompt("Region (AS, EU, ME, AU, NA)?").toUpperCase();
-  if(!Object.keys(categoryMap).includes(tier)||!["AS","EU","ME","AU","NA"].includes(region)){ alert("Invalid input"); return; }
+  const type=prompt("Account type (premium/crack)?").toLowerCase();
+  if(!Object.keys(categoryMap).includes(tier)||!["AS","EU","ME","AU","NA"].includes(region)||!["premium","crack"].includes(type)){
+    alert("Invalid input"); return;
+  }
   
-  // Automatically generate head URL
-  const skin = getHeadURL(name);
-  
+  const skin = getHeadURL(name,type);
   players.push({name,tier,region,skin});
   savePlayers();
   render();
