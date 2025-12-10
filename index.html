@@ -32,7 +32,13 @@ button:hover { background:#2ea043; }
 
 <script>
 const secretKey = "aceppp1122"; // Admin key
-const categoryMap = { "HT1":"T1","LT1":"T1","HT2":"T2","LT2":"T2","HT3":"T3","LT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5" };
+
+// Updated category mapping with retired tiers
+const categoryMap = { 
+  "HT1":"T1","LT1":"T1","HT2":"T2","LT2":"T2","HT3":"T3","LT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5",
+  "RHT3":"T3","RHT2":"T2","RHT1":"T1","RLT2":"T2","RLT1":"T1"
+};
+
 const categories = ["T1","T2","T3","T4","T5"];
 
 // Load players from localStorage or default
@@ -51,7 +57,7 @@ function getHeadURL(name, type){
   return "https://mc-heads.net/avatar/Steve/32"; // crack account
 }
 
-// Render leaderboard with HT before LT
+// Render leaderboard with HT > LT > RHT/RLT sorting
 function render(){
   const container=document.getElementById("leaderboard-container");
   container.innerHTML="";
@@ -70,9 +76,16 @@ function render(){
     const catPlayers = players
       .filter(p => categoryMap[p.tier] === cat)
       .sort((a,b)=>{
-        const aType = a.tier.startsWith("HT") ? 0 : 1;
-        const bType = b.tier.startsWith("HT") ? 0 : 1;
-        if(aType !== bType) return aType - bType;
+        // HT -> LT -> RHT -> RLT
+        const aPriority = a.tier.startsWith("HT") ? 0 : a.tier.startsWith("LT") ? 1 : a.tier.startsWith("RHT") ? 2 : 3;
+        const bPriority = b.tier.startsWith("HT") ? 0 : b.tier.startsWith("LT") ? 1 : b.tier.startsWith("RHT") ? 2 : 3;
+        if(aPriority !== bPriority) return aPriority - bPriority;
+
+        // Extract number from tier (e.g., HT3 -> 3, RLT1 -> 1)
+        const aNum = parseInt(a.tier.match(/\d/)[0]);
+        const bNum = parseInt(b.tier.match(/\d/)[0]);
+        if(aNum !== bNum) return aNum - bNum;
+
         return a.name.localeCompare(b.name);
       });
     catPlayers.forEach(p=>{
@@ -89,7 +102,7 @@ function addPlayer(){
   const key=prompt("Enter admin key to add player:");
   if(key!==secretKey){ alert("Unauthorized!"); return; }
   const name=prompt("Player name?");
-  const tier=prompt("Tier (HT1, LT1 ... HT5, LT5)?");
+  const tier=prompt("Tier (HT1, LT1 ... HT5, LT5, RHT3, RHT2, RHT1, RLT2, RLT1)?");
   const region=prompt("Region (AS, EU, ME, AU, NA)?").toUpperCase();
   const type=prompt("Account type (premium/crack)?").toLowerCase();
   if(!Object.keys(categoryMap).includes(tier) || !["AS","EU","ME","AU","NA"].includes(region) || !["premium","crack"].includes(type)){
