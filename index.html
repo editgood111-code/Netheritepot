@@ -5,87 +5,102 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Netheritepot Tierlist</title>
 <style>
-  /* Page + basic */
   :root{
     --bg:#0d1117; --card:#161b22; --muted:#9aa; --accent:#238636; --accent-hover:#2ea043;
+    --col-as:#6f9bff; --col-eu:#8a2be2; --col-na:#ffb86b; --col-me:#f66; --col-au:#2eea9e;
   }
-  body{margin:0;font-family:Arial,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;color:#c9d1d9;background:var(--bg);padding:20px;text-align:center;}
-  h1{color:#ffcc00;margin:0 0 16px 0;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;color:#c9d1d9;
+       background:var(--bg);padding:20px;text-align:center;}
+  h1{color:#ffcc00;margin:0 0 14px 0;font-size:20px}
 
-  /* Search area (mini) */
-  .search-wrap{display:flex;justify-content:center;gap:8px;margin-bottom:14px;align-items:center}
-  .search-wrap input{width:240px;padding:8px 10px;border-radius:6px;background:var(--card);border:1px solid #30363d;color:#c9d1d9}
-  .search-wrap button{padding:8px 12px;border-radius:6px;border:none;background:var(--accent);color:#fff;cursor:pointer}
+  /* Search */
+  .search-wrap{display:flex;justify-content:center;gap:8px;margin-bottom:12px;align-items:center}
+  .search-wrap input{
+    width:260px;padding:8px 10px;border-radius:6px;background:var(--card);border:1px solid #30363d;color:#c9d1d9;
+    outline:none;font-size:14px;
+  }
+  .search-wrap button{
+    padding:8px 12px;border-radius:6px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-weight:700;
+  }
   .search-wrap button:hover{background:var(--accent-hover)}
 
-  /* Search result mini card */
-  #search-result{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-  .mini-card{background:var(--card);border:1px solid #30363d;border-radius:10px;padding:10px;width:240px;display:flex;flex-direction:column;align-items:center;gap:8px}
-  .mini-card img.skin{width:64px;height:64px;border-radius:8px;border:2px solid #fff;object-fit:cover}
+  /* Search mini-card */
+  #search-result{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .mini-card{background:var(--card);border:1px solid #30363d;border-radius:10px;padding:12px;width:260px;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .mini-card img.skin{width:68px;height:68px;border-radius:8px;border:2px solid #fff;object-fit:cover}
   .mini-card .region{color:var(--muted);font-size:13px}
   .mini-card .name{font-weight:700;font-size:16px}
-  .mini-card .alias-note{font-size:12px;color:#ffd;border-radius:4px;margin-top:4px}
+  .mini-card .alias-note{font-size:12px;color:#ffd;margin-top:4px}
   .mini-card .namemc{color:#6f9bff;text-decoration:none;font-size:13px}
-  .mini-card .tier-box{display:flex;align-items:center;gap:8px;background:#212526;padding:6px 10px;border-radius:8px;font-weight:700}
-  .mini-card .tier-box img{width:22px;height:22px}
+  .mini-card .tier-box{display:flex;align-items:center;gap:8px;background:#212526;padding:8px 12px;border-radius:8px;font-weight:700}
+  .mini-card .tier-box img{width:24px;height:24px}
 
-  /* Leaderboard layout like your screenshot compact */
-  .leaderboard{display:flex;justify-content:space-between;max-width:1200px;margin:0 auto;gap:10px;overflow-x:auto;padding-bottom:20px}
+  /* Leaderboard container */
+  .leaderboard{display:flex;justify-content:space-between;max-width:1200px;margin:0 auto;gap:10px;overflow-x:auto;padding-bottom:18px}
   .tier-column{flex:1;min-width:180px}
-  .tier-column h2{font-size:16px;color:#58a6ff;border-bottom:1px solid #30363d;padding-bottom:6px;margin:0 0 8px;text-align:center}
+  .tier-column h2{font-size:15px;color:#58a6ff;border-bottom:1px solid #30363d;padding-bottom:6px;margin:0 0 8px;text-align:center}
+
+  /* rows area */
   .rows{display:flex;flex-direction:column;gap:6px;padding:0 6px}
+
   /* compact player row */
-  .player-row{display:flex;align-items:center;gap:8px;padding:4px;border-radius:6px;position:relative;overflow:visible;cursor:default}
+  .player-row{
+    height:38px; /* fixed small row height */
+    display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:8px;position:relative;
+    background:transparent; transition:transform .16s ease, box-shadow .16s ease;
+    overflow:visible;
+  }
+  .player-row:hover{transform:translateX(8px);box-shadow:0 6px 20px rgba(0,0,0,0.6);z-index:50}
+
   .player-row .head{width:28px;height:28px;border-radius:6px;border:1px solid #fff;object-fit:cover}
-  .player-row .name-wrap{display:flex;flex-direction:row;align-items:center;gap:8px}
-  .player-row .player-name{font-weight:600;font-size:14px;transition:transform .18s ease}
-  .player-row .left-border{width:4px;height:100%;position:absolute;left:0;top:0;border-radius:6px}
-  .tooltip{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);background:var(--accent);color:#fff;padding:6px 8px;border-radius:6px;font-size:13px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s}
-  .player-row:hover .tooltip{opacity:1}
-  .player-row:hover .player-name{transform:translateX(8px)}
+  .player-row .player-name{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}
+  .player-row .left-border{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:8px}
+  /* tooltip shown to the right of row on hover, positioned per-row to avoid overlap */
+  .player-row .tooltip{
+    position:absolute; left:calc(100% + 10px); top:50%; transform:translateY(-50%);
+    background:var(--accent); color:#fff; padding:6px 8px;border-radius:6px;font-size:13px;white-space:nowrap;
+    opacity:0; pointer-events:none; transition:opacity .12s;
+    z-index:999;
+  }
+  .player-row:hover .tooltip{opacity:1; pointer-events:auto}
 
-  /* tier-above small for optional mobile */
-  .tier-above{display:none}
-
-  /* controls */
+  /* small controls */
   .controls{margin-top:10px;display:flex;justify-content:center;gap:10px}
   .controls button{padding:8px 12px;border-radius:6px;border:none;background:var(--accent);color:#fff;cursor:pointer}
   .controls button:hover{background:var(--accent-hover)}
   .small{font-size:12px;color:var(--muted);margin-top:8px}
+
   @media (max-width:900px){
-    .leaderboard{flex-direction:column;align-items:center}
-    .tier-column{min-width:300px}
+    .leaderboard{flex-direction:column;align-items:flex-start}
+    .tier-column{min-width:260px}
   }
 </style>
 
-<!-- Firebase SDKs (unchanged) -->
+<!-- Firebase SDK (unchanged) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 </head>
 <body>
   <h1>Netheritepot Tierlist</h1>
 
-  <!-- Search -->
   <div class="search-wrap">
-    <input id="search-input" placeholder="Search player... (IGN or alias)">
+    <input id="search-input" placeholder="Search any player (ign)">
     <button onclick="searchPlayer()">Search</button>
   </div>
 
   <div id="search-result"></div>
 
-  <!-- Leaderboard -->
   <div class="leaderboard" id="leaderboard-container"></div>
 
-  <!-- Controls -->
   <div class="controls">
     <button onclick="addPlayer()">Add / Update (admin)</button>
     <button onclick="removePlayer()">Remove (admin)</button>
   </div>
-  <div class="small">Admin key required to add or remove. Premium players use live skin (mc-heads) automatically.</div>
+  <div class="small">Admin key required for add/remove. Premium players use live skin (mc-heads) automatically.</div>
 
 <script>
-/* ================== CONFIG - DO NOT EDIT UNLESS YOU KNOW WHAT YOU'RE DOING ================== */
+/* ---------- CONFIG (do not change if unsure) ---------- */
 const secretKey = "aceppp1122";
 const firebaseConfig = {
   apiKey: "AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
@@ -96,45 +111,41 @@ const firebaseConfig = {
   messagingSenderId: "410709885310",
   appId: "1:410709885310:web:ceab1ca94e0f45513f332f"
 };
-const regionList = ["AS","EU","ME","AU","NA"]; // allowed regions
+const regionList = ["AS","EU","ME","AU","NA"];
 const categories = ["T1","T2","T3","T4","T5"];
-// mapping (includes retired mapping rule per your request)
 const categoryMap = {
   "HT1":"T1","LT1":"T1","RHT1":"T1","RLT1":"T1",
   "HT2":"T2","LT2":"T2","RHT2":"T2","RLT2":"T2",
   "HT3":"T3","LT3":"T3","RHT3":"T3","RLT3":"T3",
   "HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5"
 };
-// Sorting preference inside a column: HT first, then RHT, then LT, then RLT
 const tierOrder = ["HT","RHT","LT","RLT"];
 
-/* ================== INIT FIREBASE & DATA ================== */
+/* ---------- Firebase init ---------- */
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const playersRef = db.ref("players");
 
-// players: array of objects:
-// { name:"Swight", tier:"HT1", region:"EU", type:"premium"|"crack", skin:"url", aliases:[] }
+/* players array structure:
+ { name:"Swight", tier:"HT1", region:"EU", type:"premium"|"crack", skin:"url", aliases:[] }
+*/
 let players = [];
 
-// helper to build skin url
+/* helper: skin url */
 function getHeadURL(name, type="premium", size=32){
   if(!name) return `https://mc-heads.net/avatar/Steve/${size}`;
   return (type && type.toLowerCase()==="premium") ? `https://mc-heads.net/avatar/${encodeURIComponent(name)}/${size}` : `https://mc-heads.net/avatar/Steve/${size}`;
 }
 
-/* Bootstrap: load players from Firebase; if empty, add defaults */
+/* load from firebase; if empty create defaults */
 playersRef.once("value", snapshot=>{
   const data = snapshot.val();
   if(Array.isArray(data) && data.length>0){
     players = data;
   } else if(data && typeof data === "object"){
-    // sometimes data saved as object -> convert to array
-    try{
-      players = Array.isArray(data) ? data : Object.values(data);
-    }catch(e){ players = []; }
+    // convert object to array if needed
+    try{ players = Array.isArray(data) ? data : Object.values(data); } catch(e){ players = []; }
   } else {
-    // default players (only used when DB empty)
     players = [
       { name:"Swight", tier:"HT1", region:"EU", type:"premium", skin:getHeadURL("Swight","premium",32), aliases:[] },
       { name:"Marlowww", tier:"LT2", region:"NA", type:"premium", skin:getHeadURL("Marlowww","premium",32), aliases:[] },
@@ -145,10 +156,10 @@ playersRef.once("value", snapshot=>{
   render();
 });
 
-/* save to firebase */
+/* save */
 function savePlayers(){ playersRef.set(players); }
 
-/* normalize helper */
+/* normalize */
 function n(s){ return (s||"").toLowerCase().trim(); }
 
 /* find by name or alias */
@@ -165,9 +176,9 @@ function findPlayerByNameOrAlias(q){
   return null;
 }
 
-/* ================== RENDER ================== */
+/* ---------- RENDER ---------- */
 function render(){
-  // refresh premium skins so if player renamed and DB updated, skin updates
+  // update premium skins to current name
   players.forEach(p=>{
     if(p.type && p.type.toLowerCase()==="premium"){
       p.skin = getHeadURL(p.name,"premium",32);
@@ -176,15 +187,13 @@ function render(){
 
   const container = document.getElementById("leaderboard-container");
   container.innerHTML = "";
-
-  // build columns
   const cols = {};
   categories.forEach(cat=>{
     const col = document.createElement("div");
     col.className = "tier-column";
-    const title = document.createElement("h2");
-    title.textContent = cat;
-    col.appendChild(title);
+    const h2 = document.createElement("h2");
+    h2.textContent = cat;
+    col.appendChild(h2);
     const rows = document.createElement("div");
     rows.className = "rows";
     col.appendChild(rows);
@@ -192,79 +201,70 @@ function render(){
     cols[cat] = rows;
   });
 
-  // Prepare grouped players array per category
+  // group then sort per column (HT > RHT > LT > RLT), alphabetical after
   categories.forEach(cat=>{
     const catPlayers = players.filter(p => categoryMap[p.tier] === cat);
-    // sort: by tier order (HT,RHT,LT,RLT) then name
     catPlayers.sort((a,b)=>{
-      const aPref = a.tier.replace(/[0-9]/g,"").slice(0,4); // get HT/RHT/LT/RLT
+      const aPref = a.tier.replace(/[0-9]/g,"").slice(0,4);
       const bPref = b.tier.replace(/[0-9]/g,"").slice(0,4);
       const ai = tierOrder.indexOf(aPref);
       const bi = tierOrder.indexOf(bPref);
       if(ai !== bi) return ai - bi;
       return a.name.localeCompare(b.name, undefined, {sensitivity:"base"});
     });
+
     catPlayers.forEach(p=>{
       const row = document.createElement("div");
       row.className = "player-row";
+      row.style.position = "relative";
 
-      // left colored border by region
       const left = document.createElement("div");
       left.className = "left-border";
       left.style.background = regionColor(p.region);
-      left.style.position = "absolute"; left.style.left = "0"; left.style.top = "0"; left.style.bottom = "0"; left.style.width = "4px"; left.style.borderRadius = "6px";
+      left.style.left = "0"; left.style.top = "0"; left.style.bottom = "0"; left.style.width = "4px";
+      left.style.position = "absolute"; left.style.borderRadius = "8px";
 
-      // head
       const head = document.createElement("img");
       head.className = "head";
       head.src = p.skin || getHeadURL(p.name,p.type,32);
       head.alt = p.name;
 
-      // name
-      const nameWrap = document.createElement("div");
-      nameWrap.className = "name-wrap";
       const nameSpan = document.createElement("div");
       nameSpan.className = "player-name";
       nameSpan.textContent = p.name;
-      nameWrap.appendChild(nameSpan);
 
-      // tooltip (region | tier)
-      const tt = document.createElement("div");
-      tt.className = "tooltip";
-      tt.textContent = `${p.region} | ${p.tier}`;
+      const tooltip = document.createElement("div");
+      tooltip.className = "tooltip";
+      tooltip.textContent = `${p.region} | ${p.tier}`;
 
       row.appendChild(left);
       row.appendChild(head);
-      row.appendChild(nameWrap);
-      row.appendChild(tt);
+      row.appendChild(nameSpan);
+      row.appendChild(tooltip);
 
-      // add hover behavior (slide handled by css transform on .player-name)
-      cols[categoryMap[p.tier]].appendChild(row);
+      // improve interaction: ensure row brings to front when hovered (so tooltip visible)
+      row.addEventListener("mouseenter", ()=>{ row.style.zIndex = 60; });
+      row.addEventListener("mouseleave", ()=>{ row.style.zIndex = ""; });
+
+      cols[cat].appendChild(row);
     });
   });
 }
 
-/* simple region => color (left border) */
+/* region -> color */
 function regionColor(r){
   if(!r) return "#888";
   switch((r||"").toUpperCase()){
-    case "AS": return "#6f9bff"; // blue
-    case "EU": return "#8a2be2"; // purple
-    case "NA": return "#ffb86b"; // orange
-    case "ME": return "#f66"; // red
-    case "AU": return "#2eea9e"; // green
+    case "AS": return "var(--col-as)";
+    case "EU": return "var(--col-eu)";
+    case "NA": return "var(--col-na)";
+    case "ME": return "var(--col-me)";
+    case "AU": return "var(--col-au)";
     default: return "#999";
   }
 }
 
-/* ================== ADMIN: Add/Update ================ */
-/*
-Flow:
- - prompt admin key
- - enter name (could be current IGN or old alias)
- - If found by name/alias => update path (rename? change tier/region/type)
- - If not found => use Mojang API to verify if current IGN; if not current, provide alias choices (add as alias to existing player or add as new with alias or add as-is)
-*/
+/* ---------- Admin add/update ---------- */
 async function addPlayer(){
   const key = prompt("Enter admin key:");
   if(key !== secretKey){ alert("Unauthorized"); return; }
@@ -273,23 +273,17 @@ async function addPlayer(){
   if(!inputName) return;
   inputName = inputName.trim();
 
-  // existing check
   const existing = findPlayerByNameOrAlias(inputName);
   if(existing){
     const p = existing.player;
-    // quick update prompts
     const newTier = prompt(`Player found (${p.name}). Enter tier to set:`, p.tier) || p.tier;
     const newRegion = prompt(`Region (AS, EU, ME, AU, NA):`, p.region) || p.region;
     const newType = prompt(`Account type (premium/crack):`, p.type || "premium") || p.type || "premium";
-    // optional rename
     if(confirm("Rename player? (OK = rename)")){
       const newName = prompt("Enter new current IGN (exact):", p.name);
       if(newName && newName.trim()){
-        // if premium, update skin
         p.name = newName.trim();
-        if(newType.toLowerCase()==="premium"){
-          p.skin = getHeadURL(p.name,"premium",32);
-        }
+        if(newType.toLowerCase()==="premium") p.skin = getHeadURL(p.name,"premium",32);
       }
     }
     p.tier = newTier;
@@ -297,100 +291,65 @@ async function addPlayer(){
     p.type = newType.toLowerCase();
     if(p.type === "premium") p.skin = getHeadURL(p.name,"premium",32);
     else p.skin = getHeadURL("Steve","crack",32);
-    savePlayers(); render();
-    alert("Player updated.");
+    savePlayers(); render(); alert("Player updated.");
     return;
   }
 
-  // not existing -> check Mojang if current IGN
+  // not existing -> check Mojang
   let isCurrent = null;
   try{
     const res = await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(inputName)}`);
     isCurrent = (res.status === 200);
   }catch(e){
     console.warn("Mojang lookup failed", e);
-    isCurrent = null; // unknown network/CORS
+    isCurrent = null;
   }
 
   if(isCurrent === false){
-    const choice = prompt(
-`"${inputName}" is NOT a current Minecraft IGN according to Mojang.
-Choose:
-1 = Add as alias to an existing player (you must provide that player's current IGN)
-2 = Provide current IGN now (we will add current as name and store ${inputName} as alias)
-3 = Add as-is (store this name as current IGN)
-Enter 1, 2 or 3:`
-    );
+    const choice = prompt(`"${inputName}" is not a current Minecraft IGN. Choose:
+1 = Add as alias to existing player
+2 = Provide current IGN now (add current and store ${inputName} as alias)
+3 = Add as-is (store this as current)
+Enter 1,2 or 3:`);
     if(choice === "1"){
-      const target = prompt("Enter CURRENT IGN of the player to attach this alias to:");
+      const target = prompt("Enter CURRENT IGN to attach alias to:");
       if(!target){ alert("Cancelled."); return; }
       const foundTarget = findPlayerByNameOrAlias(target);
-      if(!foundTarget){ alert("Target not found in DB. Add the current IGN first."); return; }
+      if(!foundTarget){ alert("Target not found. Add the current IGN first."); return; }
       const p = foundTarget.player;
       p.aliases = p.aliases || [];
       if(!p.aliases.map(a=>n(a)).includes(n(inputName))) p.aliases.push(inputName);
-      savePlayers(); render(); alert("Alias added.");
-      return;
+      savePlayers(); render(); alert("Alias added."); return;
     } else if(choice === "2"){
       const current = prompt("Enter the CURRENT IGN now:");
       if(!current){ alert("Cancelled."); return; }
       const tier = prompt("Tier (HT1.. / RHT..):","HT1") || "HT1";
       const region = prompt("Region (AS, EU, ME, AU, NA):","NA").toUpperCase();
       const type = prompt("Account type (premium/crack):","premium").toLowerCase();
-      const newPlayer = {
-        name: current.trim(),
-        aliases: [inputName],
-        tier,
-        region,
-        type,
-        skin: type==="premium"?getHeadURL(current.trim(),"premium",32):getHeadURL("Steve","crack",32)
-      };
-      players.push(newPlayer);
-      savePlayers(); render(); alert("Added with alias.");
-      return;
+      const newPlayer = { name: current.trim(), aliases:[inputName], tier, region, type, skin:type==="premium"?getHeadURL(current.trim(),"premium",32):getHeadURL("Steve","crack",32) };
+      players.push(newPlayer); savePlayers(); render(); alert("Added with alias."); return;
     } else if(choice === "3"){
       const tier = prompt("Tier (HT1.. / RHT..):","HT1") || "HT1";
       const region = prompt("Region (AS, EU, ME, AU, NA):","NA").toUpperCase();
       const type = prompt("Account type (premium/crack):","crack").toLowerCase();
-      const newPlayer = {
-        name: inputName,
-        aliases: [],
-        tier,
-        region,
-        type,
-        skin: type==="premium"?getHeadURL(inputName,"premium",32):getHeadURL("Steve","crack",32)
-      };
-      players.push(newPlayer);
-      savePlayers(); render(); alert("Added (as-is).");
-      return;
-    } else {
-      alert("Cancelled.");
-      return;
-    }
+      const newPlayer = { name: inputName, aliases:[], tier, region, type, skin:type==="premium"?getHeadURL(inputName,"premium",32):getHeadURL("Steve","crack",32) };
+      players.push(newPlayer); savePlayers(); render(); alert("Added (as-is)."); return;
+    } else { alert("Cancelled."); return; }
   } else {
-    // is current IGN (true or null unknown -> proceed as premium by default)
+    // is current or unknown
     const tier = prompt("Tier (HT1.. / RHT..):","HT1") || "HT1";
     const region = prompt("Region (AS, EU, ME, AU, NA):","NA").toUpperCase();
     const type = prompt("Account type (premium/crack):","premium").toLowerCase();
-    const newPlayer = {
-      name: inputName,
-      aliases: [],
-      tier,
-      region,
-      type,
-      skin: type==="premium"?getHeadURL(inputName,"premium",32):getHeadURL("Steve","crack",32)
-    };
-    players.push(newPlayer);
-    savePlayers(); render(); alert("Added.");
-    return;
+    const newPlayer = { name: inputName, aliases:[], tier, region, type, skin:type==="premium"?getHeadURL(inputName,"premium",32):getHeadURL("Steve","crack",32) };
+    players.push(newPlayer); savePlayers(); render(); alert("Added."); return;
   }
 }
 
-/* ================== REMOVE ================== */
+/* ---------- Remove ---------- */
 function removePlayer(){
   const key = prompt("Enter admin key:");
   if(key !== secretKey){ alert("Unauthorized"); return; }
-  const name = prompt("Enter exact IGN to remove (or alias to remove mapping):");
+  const name = prompt("Enter exact IGN to remove (or alias):");
   if(!name) return;
   const before = players.length;
   players = players.filter(p => n(p.name) !== n(name) && !(Array.isArray(p.aliases) && p.aliases.map(a=>n(a)).includes(n(name))));
@@ -398,7 +357,7 @@ function removePlayer(){
   savePlayers(); render(); alert("Removed (if existed).");
 }
 
-/* ================== SEARCH ================== */
+/* ---------- Search ---------- */
 async function searchPlayer(){
   const q = (document.getElementById("search-input").value||"").trim();
   if(!q) return alert("Type a player name first.");
@@ -424,45 +383,34 @@ async function searchPlayer(){
     return;
   }
 
-  // Not found in DB -> ask Mojang if it's a current IGN
+  // not in DB: check Mojang
   try{
     const res = await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(q)}`);
     if(res.status === 200){
-      // exists on Mojang but not in DB
-      if(confirm(`"${q}" is a valid/current Minecraft IGN but not on the leaderboard. Add now? (OK = add)`)){
+      if(confirm(`"${q}" is a valid/current Minecraft IGN but not on the leaderboard. Add now?`)){
         addPlayerPreFill(q);
       } else {
-        alert("Not added. You can add via Add/Update.");
+        alert("Not added. Use Add/Update to add manually.");
       }
     } else {
-      alert(`"${q}" not found on Mojang and not in the leaderboard. If this is an old username add it as an alias via Add/Update.`);
+      alert(`"${q}" not found on Mojang and not in leaderboard. Add as alias via Add/Update if it's an old username.`);
     }
   }catch(e){
     console.warn("Mojang check failed", e);
-    alert("Could not reach Mojang API. If you know the current IGN, add it via Add/Update.");
+    alert("Could not reach Mojang API. Add manually via Add/Update if needed.");
   }
 }
 
 function addPlayerPreFill(ign){
   if(!ign) return;
-  const proceed = confirm(`Add ${ign} to leaderboard?`);
-  if(!proceed) return;
+  const ok = confirm(`Add ${ign} to leaderboard?`);
+  if(!ok) return;
   const tier = prompt("Tier (HT1.. / RHT..):","HT1") || "HT1";
   const region = prompt("Region (AS, EU, ME, AU, NA):","NA").toUpperCase();
   const type = prompt("Account type (premium/crack):","premium").toLowerCase();
-  const newPlayer = {
-    name: ign,
-    aliases: [],
-    tier,
-    region,
-    type,
-    skin: type==="premium"?getHeadURL(ign,"premium",32):getHeadURL("Steve","crack",32)
-  };
-  players.push(newPlayer);
-  savePlayers(); render(); alert("Added.");
+  const newPlayer = { name: ign, aliases:[], tier, region, type, skin: type==="premium"?getHeadURL(ign,"premium",32):getHeadURL("Steve","crack",32) };
+  players.push(newPlayer); savePlayers(); render(); alert("Added.");
 }
-
-/* ================== END ================== */
 </script>
 </body>
 </html>
