@@ -9,150 +9,192 @@ body { font-family: Arial,sans-serif; background:#0d1117; color:#c9d1d9; text-al
 h1 { color:#ffcc00; margin-bottom:20px; }
 
 .search-container { margin-bottom:20px; }
-.search-container input { padding:6px 12px; border-radius:6px; border:none; width:220px; }
+.search-container input { padding:6px 12px; border-radius:6px; border:none; width:200px; }
 .search-container button { padding:6px 12px; margin-left:5px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; }
 .search-container button:hover { background:#2ea043; }
 
 #search-result { margin-bottom:20px; display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; }
-.mini-card { background:#161b22; padding:10px; border-radius:8px; display:flex; flex-direction:column; align-items:center; gap:6px; width:220px; }
-.mini-card img.skin { width:64px; height:64px; border-radius:8px; border:2px solid #fff; }
-.mini-card .region { font-size:13px; color:#9aa; }
-.mini-card .name { font-weight:700; font-size:15px; }
-.mini-card .namemc { color:#6f9bff; font-size:13px; text-decoration:none; }
-.mini-card .tier-box { display:flex; align-items:center; gap:6px; background:#238636; padding:4px 8px; border-radius:4px; font-weight:700; font-size:13px; }
-.mini-card .tier-box img { width:16px; height:16px; }
+.result-player { background:#161b22; padding:10px; border-radius:8px; display:flex; align-items:center; gap:10px; }
+.result-player img { width:40px; height:40px; border-radius:50%; border:1px solid #fff; }
+.tier-box { background:#238636; padding:2px 6px; border-radius:4px; display:flex; align-items:center; gap:4px; font-size:14px; }
+.tier-box img { width:16px; height:16px; }
 
 .leaderboard { display:flex; justify-content:space-between; max-width:1200px; margin:0 auto; gap:10px; overflow-x:auto; }
 .tier-column { flex:1; min-width:180px; }
 .tier-column h2 { text-align:center; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:5px; margin-bottom:5px; }
-.rows { display:flex; flex-direction:column; gap:4px; padding:0 6px; }
 
-.player-row { display:flex; align-items:center; gap:6px; padding:4px 6px; border-radius:6px; position:relative; transition:transform .2s, box-shadow .2s; overflow:visible; background:#0d1117; }
-.player-row:hover { transform:translateX(10px); z-index:50; box-shadow:0 4px 15px rgba(0,0,0,0.5); }
-
-.player-row img { width:28px; height:28px; border-radius:6px; border:1px solid #fff; }
-.player-name { font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-
-.left-color { position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:6px; }
-
-.tooltip { position:absolute; left:calc(100% + 6px); top:50%; transform:translateY(-50%); background:#238636; color:white; padding:4px 8px; border-radius:4px; font-size:12px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .2s; }
-.player-row:hover .tooltip { opacity:1; pointer-events:auto; }
+.player-row { display:flex; align-items:center; gap:5px; margin-bottom:4px; position:relative; overflow:hidden; }
+.player-row img { width:24px; height:24px; border-radius:50%; border:1px solid #fff; }
+.player-name { transition: all 0.3s ease; cursor:pointer; white-space:nowrap; display:inline-block; }
+.player-name:hover { transform:translateX(10px); }
+.tooltip { position:absolute; left:100%; top:0; background:#238636; color:#fff; padding:2px 6px; border-radius:4px; font-size:12px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+.player-row:hover .tooltip { opacity:1; }
 
 button { padding:6px 12px; margin-top:10px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; transition:0.3s; }
 button:hover { background:#2ea043; }
-
 </style>
+
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 </head>
 <body>
 <h1>Netheritepot Tierlist</h1>
 
 <div class="search-container">
-  <input type="text" id="search-input" placeholder="Search any player (ign)">
+  <input type="text" id="search-input" placeholder="Search player...">
   <button onclick="searchPlayer()">Search</button>
 </div>
 
 <div id="search-result"></div>
+
 <div class="leaderboard" id="leaderboard-container"></div>
+
 <div style="margin-top:20px;">
-  <button onclick="addPlayer()">Add / Update (Admin)</button>
-  <button onclick="removePlayer()">Remove (Admin)</button>
+  <button onclick="addPlayer()">Add Player</button>
+  <button onclick="removePlayer()">Remove Player</button>
 </div>
 
 <script>
-const secretKey="aceppp1122";
-const categories=["T1","T2","T3","T4","T5"];
-const categoryMap={
-  "HT1":"T1","LT1":"T1","RHT1":"T1","RLT1":"T1",
-  "HT2":"T2","LT2":"T2","RHT2":"T2","RLT2":"T2",
-  "HT3":"T3","LT3":"T3","RHT3":"T3","RLT3":"T3",
-  "HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5"
+const secretKey = "aceppp1122";
+
+const categoryMap = {
+  "HT1":"T1","LT1":"T1","HT2":"T2","LT2":"T2","HT3":"T3","LT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5",
+  "RHT1":"T1","RLT1":"T1","RHT2":"T2","RLT2":"T2","RHT3":"T3","RLT3":"T3"
 };
-const regionColors={AS:"#6f9bff",EU:"#8a2be2",NA:"#ffb86b",ME:"#f66",AU:"#2eea9e"};
+const categories = ["T1","T2","T3","T4","T5"];
+const regionList = ["AS","EU","ME","AU","NA"];
 
-firebase.initializeApp({
-  apiKey:"AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
-  authDomain:"tierlist-3305a.firebaseapp.com",
-  databaseURL:"https://tierlist-3305a-default-rtdb.firebaseio.com",
-  projectId:"tierlist-3305a",
-  storageBucket:"tierlist-3305a.firebasestorage.app",
-  messagingSenderId:"410709885310",
-  appId:"1:410709885310:web:ceab1ca94e0f45513f332f"
-});
+// Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
+  authDomain: "tierlist-3305a.firebaseapp.com",
+  databaseURL: "https://tierlist-3305a-default-rtdb.firebaseio.com",
+  projectId: "tierlist-3305a",
+  storageBucket: "tierlist-3305a.firebasestorage.app",
+  messagingSenderId: "410709885310",
+  appId: "1:410709885310:web:ceab1ca94e0f45513f332f"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const playersRef = db.ref("players");
 
-const db=firebase.database();
-const playersRef=db.ref("players");
-let players=[];
+let players = [];
 
-function getHeadURL(name,type="premium"){return type==="premium"?`https://mc-heads.net/avatar/${encodeURIComponent(name)}/32`:"https://mc-heads.net/avatar/Steve/32";}
+// Default head URL
+function getHeadURL(name,type){ return type==="premium"?`https://mc-heads.net/avatar/${name}/32`:"https://mc-heads.net/avatar/Steve/32"; }
 
-playersRef.once("value",snapshot=>{
-  const data=snapshot.val();
-  if(data){players=data;}
-  else{players=[
-    {name:"Swight",tier:"HT1",region:"EU",skin:getHeadURL("Swight"),type:"premium",aliases:[]},
-    {name:"Marlowww",tier:"LT2",region:"NA",skin:getHeadURL("Marlowww"),type:"premium",aliases:[]},
-    {name:"ItzRealMe",tier:"HT3",region:"AS",skin:getHeadURL("ItzRealMe"),type:"premium",aliases:[]}
-  ]; playersRef.set(players);}
+// Load players
+playersRef.once("value", snapshot => {
+  const data = snapshot.val();
+  if(data){
+    players = data;
+  } else {
+    // Default players
+    players = [
+      { name:"Swight", tier:"HT1", region:"EU", type:"premium", skin:getHeadURL("Swight","premium") },
+      { name:"Marlowww", tier:"LT2", region:"NA", type:"premium", skin:getHeadURL("Marlowww","premium") },
+      { name:"ItzRealMe", tier:"HT3", region:"AS", type:"premium", skin:getHeadURL("ItzRealMe","premium") }
+    ];
+    playersRef.set(players);
+  }
   render();
 });
 
-function savePlayers(){playersRef.set(players);}
+// Save to Firebase
+function savePlayers(){ playersRef.set(players); }
 
+// Render leaderboard
 function render(){
-  // update premium skins
-  players.forEach(p=>{if(p.type==="premium") p.skin=getHeadURL(p.name);});
-
-  const container=document.getElementById("leaderboard-container");
+  const container = document.getElementById("leaderboard-container");
   container.innerHTML="";
-  const cols={};
+  const cols = {};
   categories.forEach(cat=>{
-    const col=document.createElement("div"); col.className="tier-column";
-    const h2=document.createElement("h2"); h2.textContent=cat; col.appendChild(h2);
-    const rows=document.createElement("div"); rows.className="rows"; col.appendChild(rows);
-    container.appendChild(col); cols[cat]=rows;
+    const col = document.createElement("div");
+    col.className = "tier-column";
+    const h2 = document.createElement("h2");
+    h2.textContent = cat;
+    col.appendChild(h2);
+    container.appendChild(col);
+    cols[cat] = col;
   });
 
-  categories.forEach(cat=>{
-    const catPlayers=players.filter(p=>categoryMap[p.tier]===cat)
-      .sort((a,b)=>{const order=["HT","RHT","LT","RLT"]; const ai=order.indexOf(a.tier.replace(/[0-9]/g,"").slice(0,3));
-      const bi=order.indexOf(b.tier.replace(/[0-9]/g,"").slice(0,3)); if(ai!==bi) return ai-bi; return a.name.localeCompare(b.name);});
+  const maxPlayers = Math.max(...categories.map(cat=>players.filter(p=>categoryMap[p.tier]===cat).length));
 
-    catPlayers.forEach(p=>{
-      const row=document.createElement("div"); row.className="player-row";
-      const left=document.createElement("div"); left.className="left-color"; left.style.background=regionColors[p.region]||"#888";
-      const head=document.createElement("img"); head.src=p.skin; head.alt=p.name; head.className="head";
-      const nameSpan=document.createElement("div"); nameSpan.className="player-name"; nameSpan.textContent=p.name;
-      const tooltip=document.createElement("div"); tooltip.className="tooltip"; tooltip.textContent=`${p.region} | ${p.tier}`;
-      row.appendChild(left); row.appendChild(head); row.appendChild(nameSpan); row.appendChild(tooltip);
-      row.addEventListener("mouseenter",()=>{row.style.zIndex=50;}); row.addEventListener("mouseleave",()=>{row.style.zIndex="";});
-      cols[cat].appendChild(row);
+  for(let i=0;i<maxPlayers;i++){
+    categories.forEach(cat=>{
+      const catPlayers = players.filter(p=>categoryMap[p.tier]===cat)
+        .sort((a,b)=>{
+          const order = ["HT","RHT","LT","RLT"];
+          return order.indexOf(a.tier.slice(0,2)) - order.indexOf(b.tier.slice(0,2));
+        });
+      if(catPlayers[i]){
+        const p = catPlayers[i];
+        const pDiv = document.createElement("div");
+        pDiv.className = "player-row";
+        pDiv.innerHTML = `<img src="${p.skin}" alt="${p.name}">
+                          <span class="player-name">${p.name}
+                            <span class="tooltip">${p.region} | ${p.tier}</span>
+                          </span>`;
+        cols[cat].appendChild(pDiv);
+      }
     });
-  });
+  }
 }
 
-function addPlayer(){const key=prompt("Admin key:");if(key!==secretKey){alert("Unauthorized");return;}
-const name=prompt("Player IGN:");if(!name)return; const tier=prompt("Tier (HT1..RHT3)","HT1")||"HT1";
-const region=prompt("Region (AS,EU,ME,AU,NA)","NA").toUpperCase(); const type=prompt("premium/crack","premium").toLowerCase();
-const existing=players.find(p=>p.name.toLowerCase()===name.toLowerCase());
-if(existing){existing.tier=tier; existing.region=region; existing.type=type; if(type==="premium") existing.skin=getHeadURL(name); else existing.skin=getHeadURL("Steve","crack"); savePlayers(); render(); return;}
-players.push({name,tier,region,type,skin:type==="premium"?getHeadURL(name):getHeadURL("Steve","crack"),aliases:[]}); savePlayers(); render();
+// Add player
+function addPlayer(){
+  const key = prompt("Enter admin key:");
+  if(key!==secretKey){ alert("Unauthorized!"); return; }
+  const name = prompt("Player name?");
+  const tier = prompt("Tier (HT1, LT1, RHT1...)?");
+  const region = prompt("Region (AS, EU, ME, AU, NA)?").toUpperCase();
+  const type = prompt("Account type (premium/crack)?").toLowerCase();
+  if(!Object.keys(categoryMap).includes(tier) || !regionList.includes(region) || !["premium","crack"].includes(type)){
+    alert("Invalid input"); return;
+  }
+  const skin = getHeadURL(name,type);
+  const existingIndex = players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
+  if(existingIndex!==-1){
+    if(type==="premium") players[existingIndex].skin = skin;
+    players[existingIndex].tier = tier;
+    players[existingIndex].region = region;
+    players[existingIndex].type = type;
+  } else {
+    players.push({name,tier,region,type,skin});
+  }
+  savePlayers();
+  render();
 }
 
-function removePlayer(){const key=prompt("Admin key:");if(key!==secretKey){alert("Unauthorized");return;}
-const name=prompt("Player IGN to remove:");if(!name)return; players=players.filter(p=>p.name.toLowerCase()!==name.toLowerCase()); savePlayers(); render();}
+// Remove player
+function removePlayer(){
+  const key = prompt("Enter admin key:");
+  if(key!==secretKey){ alert("Unauthorized!"); return; }
+  const name = prompt("Player name to remove:");
+  const index = players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
+  if(index===-1){ alert("Player not found!"); return; }
+  players.splice(index,1);
+  savePlayers();
+  render();
+}
 
+// Search player
 function searchPlayer(){
-  const q=document.getElementById("search-input").value.toLowerCase().trim();
-  const resultDiv=document.getElementById("search-result"); resultDiv.innerHTML="";
-  const p=players.find(pl=>pl.name.toLowerCase()===q||pl.aliases?.map(a=>a.toLowerCase()).includes(q));
-  if(!p){alert("Player not found"); return;}
-  const div=document.createElement("div"); div.className="mini-card";
-  div.innerHTML=`<img class="skin" src="${p.skin}" alt="${p.name}">
-  <div class="region">${p.region}</div>
-  <div class="name">${p.name}</div>
-  <div class="tier-box"><img src="https://mctiers.com/tier_icons/nethop.svg" alt="helmet"><div class="tier-text">${p.tier}</div></div>`;
+  const name = document.getElementById("search-input").value.toLowerCase();
+  const p = players.find(pl=>pl.name.toLowerCase()===name);
+  const resultDiv = document.getElementById("search-result");
+  resultDiv.innerHTML = "";
+  if(!p){ alert("Player not found"); return; }
+  const div = document.createElement("div");
+  div.className = "result-player";
+  div.innerHTML = `<img src="${p.skin}" alt="${p.name}">
+                   <span>${p.name}</span>
+                   <div class="tier-box">
+                     <img src="https://mctiers.com/tier_icons/nethop.svg" alt="helmet">
+                     <span>${p.tier}</span>
+                   </div>`;
   resultDiv.appendChild(div);
 }
 </script>
