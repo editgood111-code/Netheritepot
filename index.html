@@ -1,191 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Netheritepot Leaderboard</title>
+<meta charset="UTF-8" />
+<title>NetheritePot Search</title>
 <style>
-body { font-family: Arial,sans-serif; background:#0d1117; color:#c9d1d9; text-align:center; padding:20px; }
-h1 { color:#ffcc00; margin-bottom:20px; }
-.search-container { margin-bottom:20px; }
-.search-container input { padding:6px 12px; border-radius:6px; border:none; width:200px; }
-.search-container button { padding:6px 12px; margin-left:5px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; }
-.search-container button:hover { background:#2ea043; }
-#search-result { margin-bottom:20px; display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; }
-.result-player { background:#161b22; padding:10px; border-radius:8px; display:flex; align-items:center; gap:10px; }
-.result-player img { width:40px; height:40px; border-radius:50%; border:1px solid #fff; }
-.tier-box { background:#238636; padding:2px 6px; border-radius:4px; display:flex; align-items:center; gap:4px; font-size:14px; }
-.tier-box img { width:16px; height:16px; }
-.leaderboard { display:flex; justify-content:space-between; max-width:1200px; margin:0 auto; gap:10px; overflow-x:auto; }
-.tier-column { flex:1; min-width:180px; }
-.tier-column h2 { text-align:center; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:5px; margin-bottom:5px; }
-.player-row { display:flex; align-items:center; gap:5px; margin-bottom:4px; position:relative; overflow:hidden; }
-.player-row img { width:24px; height:24px; border-radius:50%; border:1px solid #fff; }
-.player-name { transition: all 0.3s ease; cursor:pointer; white-space:nowrap; display:inline-block; }
-.player-name:hover { transform:translateX(10px); }
-.tooltip { position:absolute; left:100%; top:0; background:#238636; color:#fff; padding:2px 6px; border-radius:4px; font-size:12px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.3s; }
-.player-row:hover .tooltip { opacity:1; }
-button { padding:6px 12px; margin-top:10px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; transition:0.3s; }
-button:hover { background:#2ea043; }
+    body {
+        background: #0e0e0e;
+        color: white;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .search-box {
+        width: 420px;
+        margin: 0 auto;
+        display: flex;
+        gap: 10px;
+    }
+
+    .search-box input {
+        flex: 1;
+        padding: 12px;
+        border-radius: 8px;
+        border: none;
+        font-size: 16px;
+    }
+
+    .search-box button {
+        padding: 12px 20px;
+        border: none;
+        background: #7f3fff;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .player-card {
+        margin: 40px auto;
+        background: #1b1b1b;
+        padding: 25px;
+        width: 420px;
+        border-radius: 12px;
+        display: none;
+        text-align: left;
+    }
+
+    .player-header {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .player-header img {
+        width: 70px;
+        height: 70px;
+        border-radius: 6px;
+    }
+
+    .player-name {
+        font-size: 26px;
+        font-weight: bold;
+    }
+
+    .region {
+        margin-top: 3px;
+        color: #bdbdbd;
+        font-size: 14px;
+    }
+
+    .links a {
+        color: #6f9bff;
+        text-decoration: none;
+        font-size: 15px;
+    }
+
+    .tier-box {
+        margin-top: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #262626;
+        padding: 10px 14px;
+        border-radius: 10px;
+        width: fit-content;
+        font-size: 20px;
+    }
+
+    .tier-box img {
+        width: 28px;
+        height: 28px;
+    }
 </style>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 </head>
 <body>
-<h1>Netheritepot Leaderboard</h1>
 
-<div class="search-container">
-  <input type="text" id="search-input" placeholder="Search player...">
-  <button onclick="searchPlayer()">Search</button>
+<h1>NetheritePot Player Search</h1>
+
+<div class="search-box">
+    <input id="searchUser" type="text" placeholder="Search player username...">
+    <button onclick="searchPlayer()">Search</button>
 </div>
 
-<div id="search-result"></div>
+<div id="playerCard" class="player-card">
+    <div class="player-header">
+        <img id="skinImg" src="">
+        <div>
+            <div id="playerName" class="player-name"></div>
+            <div id="playerRegion" class="region"></div>
+        </div>
+    </div>
 
-<div class="leaderboard" id="leaderboard-container"></div>
+    <div class="links">
+        <br>
+        <a id="namemcLink" href="" target="_blank">NameMC Profile</a>
+    </div>
 
-<div style="margin-top:20px;">
-  <button onclick="addPlayer()">Add Player</button>
-  <button onclick="removePlayer()">Remove Player</button>
+    <div class="tier-box">
+        <img src="https://mctiers.com/tier_icons/nethop.svg">
+        <span id="tierText">NetheritePot</span>
+    </div>
 </div>
 
 <script>
-const secretKey = "aceppp1122";
-const categoryMap = {
-  "HT1":"T1","LT1":"T1","HT2":"T2","LT2":"T2","HT3":"T3","LT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5",
-  "RHT1":"T1","RLT1":"T1","RHT2":"T2","RLT2":"T2","RHT3":"T3","RLT3":"T3"
-};
-const categories = ["T1","T2","T3","T4","T5"];
+function searchPlayer() {
+    const user = document.getElementById("searchUser").value.trim();
+    if (!user) return alert("Enter a username!");
 
-// Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
-  authDomain: "tierlist-3305a.firebaseapp.com",
-  databaseURL: "https://tierlist-3305a-default-rtdb.firebaseio.com",
-  projectId: "tierlist-3305a",
-  storageBucket: "tierlist-3305a.firebasestorage.app",
-  messagingSenderId: "410709885310",
-  appId: "1:410709885310:web:ceab1ca94e0f45513f332f"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const playersRef = db.ref("players");
+    // **Skin (renders like mctiers — full body)**
+    document.getElementById("skinImg").src =
+        `https://mc-heads.net/avatar/${user}/100`;
 
-let players = [];
-playersRef.once("value", snapshot => {
-  const data = snapshot.val();
-  if(data){
-    players = data;
-  } else {
-    // Default players
-    players = [
-      { name:"Swight", tier:"HT1", region:"EU", skin:"https://mc-heads.net/avatar/Swight/32", type:"premium" },
-      { name:"Marlowww", tier:"LT2", region:"NA", skin:"https://mc-heads.net/avatar/Marlowww/32", type:"premium" },
-      { name:"ItzRealMe", tier:"HT3", region:"AS", skin:"https://mc-heads.net/avatar/ItzRealMe/32", type:"premium" }
-    ];
-    playersRef.set(players);
-  }
-  render();
-});
+    // Player name
+    document.getElementById("playerName").textContent = user;
 
-// Save
-function savePlayers(){ playersRef.set(players); }
+    // Region (you said to show North America)
+    document.getElementById("playerRegion").textContent =
+        "North America (region)";
 
-// Get head URL
-function getHeadURL(name,type){ return type==="premium"?`https://mc-heads.net/avatar/${name}/32`:"https://mc-heads.net/avatar/Steve/32"; }
+    // NameMC link
+    document.getElementById("namemcLink").href =
+        `https://namemc.com/profile/${user}`;
 
-// Render leaderboard
-function render(){
-  const container = document.getElementById("leaderboard-container");
-  container.innerHTML = "";
-  const cols = {};
-  categories.forEach(cat=>{
-    const col = document.createElement("div");
-    col.className = "tier-column";
-    const h2 = document.createElement("h2");
-    h2.textContent = cat;
-    col.appendChild(h2);
-    container.appendChild(col);
-    cols[cat] = col;
-  });
-
-  const maxPlayers = Math.max(...categories.map(cat=>players.filter(p=>categoryMap[p.tier]===cat).length));
-  for(let i=0;i<maxPlayers;i++){
-    categories.forEach(cat=>{
-      const catPlayers = players.filter(p=>categoryMap[p.tier]===cat)
-                                .sort((a,b)=>{
-                                  const order = ["HT","RHT","LT","RLT"];
-                                  return order.indexOf(a.tier.slice(0,2)) - order.indexOf(b.tier.slice(0,2));
-                                });
-      if(catPlayers[i]){
-        const p = catPlayers[i];
-        const pDiv = document.createElement("div");
-        pDiv.className = "player-row";
-        pDiv.innerHTML = `<img src="${p.skin}" alt="${p.name}">
-                          <span class="player-name">${p.name}
-                            <span class="tooltip">${p.region} | ${p.tier}</span>
-                          </span>`;
-        cols[cat].appendChild(pDiv);
-      }
-    });
-  }
+    // Show card
+    document.getElementById("playerCard").style.display = "block";
 }
-
-// Add / remove
-function addPlayer(){
-  const key = prompt("Enter admin key:");
-  if(key!==secretKey){ alert("Unauthorized!"); return; }
-  const name = prompt("Player name?");
-  const tier = prompt("Tier (HT1, LT1, RHT1...)?");
-  const region = prompt("Region (AS, EU, ME, AU, NA)?").toUpperCase();
-  const type = prompt("Account type (premium/crack)?").toLowerCase();
-  if(!Object.keys(categoryMap).includes(tier) || !["AS","EU","ME","AU","NA"].includes(region) || !["premium","crack"].includes(type)){
-    alert("Invalid input"); return;
-  }
-  const skin = getHeadURL(name,type);
-  const existingIndex = players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
-  if(existingIndex!==-1){
-    if(type==="premium") players[existingIndex].skin = skin;
-    players[existingIndex].tier = tier;
-    players[existingIndex].region = region;
-  } else {
-    players.push({name,tier,region,skin,type});
-  }
-  savePlayers();
-  render();
-}
-
-function removePlayer(){
-  const key = prompt("Enter admin key:");
-  if(key!==secretKey){ alert("Unauthorized!"); return; }
-  const name = prompt("Player name to remove:");
-  const index = players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
-  if(index===-1){ alert("Player not found!"); return; }
-  players.splice(index,1);
-  savePlayers();
-  render();
-}
-
-// Search
-function searchPlayer(){
-  const name = document.getElementById("search-input").value.toLowerCase();
-  const p = players.find(pl=>pl.name.toLowerCase()===name);
-  const resultDiv = document.getElementById("search-result");
-  resultDiv.innerHTML = "";
-  if(!p){ alert("Player not found"); return; }
-  const div = document.createElement("div");
-  div.className = "result-player";
-  div.innerHTML = `<img src="${p.skin}" alt="${p.name}">
-                   <span>${p.name}</span>
-                   <div class="tier-box">
-                     <img src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/7/70/Netherite_Helmet_JE2_BE2.png" alt="helmet">
-                     <span>${p.tier}</span>
-                   </div>`;
-  resultDiv.appendChild(div);
-}
-
 </script>
+
 </body>
 </html>
