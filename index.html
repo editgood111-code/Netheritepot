@@ -66,7 +66,7 @@ const categoryMap = {
 const categories = ["T1","T2","T3","T4","T5"];
 const regionList = ["AS","EU","ME","AU","NA"];
 
-// Firebase
+// Firebase setup
 const firebaseConfig = {
   apiKey: "AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
   authDomain: "tierlist-3305a.firebaseapp.com",
@@ -85,13 +85,12 @@ let players = [];
 // Default head URL
 function getHeadURL(name,type){ return type==="premium"?`https://mc-heads.net/avatar/${name}/32`:"https://mc-heads.net/avatar/Steve/32"; }
 
-// Load players
+// Load players from Firebase
 playersRef.once("value", snapshot => {
   const data = snapshot.val();
   if(data){
     players = data;
   } else {
-    // Default players
     players = [
       { name:"Swight", tier:"HT1", region:"EU", type:"premium", skin:getHeadURL("Swight","premium") },
       { name:"Marlowww", tier:"LT2", region:"NA", type:"premium", skin:getHeadURL("Marlowww","premium") },
@@ -189,12 +188,17 @@ function searchPlayer(){
   if(!p){ alert("Player not found"); return; }
   const div = document.createElement("div");
   div.className = "result-player";
-  div.innerHTML = `<img src="${p.skin}" alt="${p.name}">
-                   <span>${p.name}</span>
-                   <div class="tier-box">
-                     <img src="https://mctiers.com/tier_icons/nethop.svg" alt="helmet">
-                     <span>${p.tier}</span>
-                   </div>`;
+  div.innerHTML = `
+    <img src="${p.skin}" alt="${p.name}">
+    <div>
+      <strong>${p.name}</strong><br>
+      ${p.region}<br>
+      <a href="https://namemc.com/profile/${p.name}" target="_blank">NameMC</a>
+    </div>
+    <div class="tier-box">
+      <img src="https://mctiers.com/tier_icons/nethop.svg" alt="helmet">
+      <span>${p.tier}</span>
+    </div>`;
   resultDiv.appendChild(div);
 }
 </script>
