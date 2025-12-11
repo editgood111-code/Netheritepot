@@ -14,10 +14,12 @@ h1 { color:#ffcc00; margin-bottom:20px; }
 .search-container button:hover { background:#2ea043; }
 
 #search-result { margin-bottom:20px; display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; }
-.result-player { background:#161b22; padding:10px; border-radius:8px; display:flex; align-items:center; gap:10px; }
-.result-player img { width:40px; height:40px; border-radius:50%; border:1px solid #fff; }
-.tier-box { background:#238636; padding:2px 6px; border-radius:4px; display:flex; align-items:center; gap:4px; font-size:14px; }
-.tier-box img { width:16px; height:16px; }
+.result-player { background:#161b22; padding:15px; border-radius:8px; display:flex; flex-direction:column; align-items:center; width:200px; }
+.result-player img { width:60px; height:60px; border-radius:50%; border:2px solid #fff; margin-bottom:10px; }
+.result-player .player-info { margin-bottom:10px; text-align:center; }
+.result-player .player-info span { display:block; }
+.tier-box { background:#238636; padding:4px 6px; border-radius:4px; display:flex; align-items:center; gap:6px; font-size:14px; justify-content:center; }
+.tier-box img { width:20px; height:20px; }
 
 .leaderboard { display:flex; justify-content:space-between; max-width:1200px; margin:0 auto; gap:10px; overflow-x:auto; }
 .tier-column { flex:1; min-width:180px; }
@@ -58,7 +60,6 @@ button:hover { background:#2ea043; }
 
 <script>
 const secretKey = "aceppp1122";
-
 const categoryMap = {
   "HT1":"T1","LT1":"T1","HT2":"T2","LT2":"T2","HT3":"T3","LT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5",
   "RHT1":"T1","RLT1":"T1","RHT2":"T2","RLT2":"T2","RHT3":"T3","RLT3":"T3"
@@ -66,7 +67,7 @@ const categoryMap = {
 const categories = ["T1","T2","T3","T4","T5"];
 const regionList = ["AS","EU","ME","AU","NA"];
 
-// Firebase setup
+// Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
   authDomain: "tierlist-3305a.firebaseapp.com",
@@ -82,7 +83,6 @@ const playersRef = db.ref("players");
 
 let players = [];
 
-// Default head URL
 function getHeadURL(name,type){ return type==="premium"?`https://mc-heads.net/avatar/${name}/32`:"https://mc-heads.net/avatar/Steve/32"; }
 
 // Load players from Firebase
@@ -101,7 +101,6 @@ playersRef.once("value", snapshot => {
   render();
 });
 
-// Save to Firebase
 function savePlayers(){ playersRef.set(players); }
 
 // Render leaderboard
@@ -179,26 +178,29 @@ function removePlayer(){
   render();
 }
 
-// Search player
+// Search player like MC Tiers
 function searchPlayer(){
   const name = document.getElementById("search-input").value.toLowerCase();
   const p = players.find(pl=>pl.name.toLowerCase()===name);
   const resultDiv = document.getElementById("search-result");
   resultDiv.innerHTML = "";
   if(!p){ alert("Player not found"); return; }
+
   const div = document.createElement("div");
   div.className = "result-player";
-  div.innerHTML = `
-    <img src="${p.skin}" alt="${p.name}">
-    <div>
-      <strong>${p.name}</strong><br>
-      ${p.region}<br>
-      <a href="https://namemc.com/profile/${p.name}" target="_blank">NameMC</a>
-    </div>
-    <div class="tier-box">
-      <img src="https://mctiers.com/tier_icons/nethop.svg" alt="helmet">
-      <span>${p.tier}</span>
-    </div>`;
+
+  // NameMC link if premium
+  let nameMCLink = p.type==="premium"?`<a href="https://namemc.com/profile/${p.name}" target="_blank">${p.name}</a>`:p.name;
+
+  div.innerHTML = `<img src="${p.skin}" alt="${p.name}">
+                   <div class="player-info">
+                     <span>${p.region}</span>
+                     <span>${nameMCLink}</span>
+                   </div>
+                   <div class="tier-box">
+                     <img src="https://mctiers.com/tier_icons/nethop.svg" alt="helmet">
+                     <span>${p.tier}</span>
+                   </div>`;
   resultDiv.appendChild(div);
 }
 </script>
