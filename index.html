@@ -7,8 +7,6 @@
 <style>
 body { font-family: Arial,sans-serif; background:#0d1117; color:#c9d1d9; text-align:center; padding:20px; }
 h1 { color:#ffcc00; margin-bottom:20px; }
-
-/* ---- SEARCH BOX (MC-TIERS STYLE) ---- */
 .search-container { margin-bottom:25px; display:flex; justify-content:center; gap:10px; }
 .search-container input {
   padding:10px 16px; width:260px;
@@ -21,8 +19,6 @@ h1 { color:#ffcc00; margin-bottom:20px; }
   color:white; cursor:pointer; font-weight:bold;
 }
 .search-container button:hover { background:#2ea043; }
-
-/* ---- SEARCH RESULT CARD ---- */
 #search-result {
   margin:25px auto; width:420px; padding:18px;
   background:#161b22; border-radius:12px;
@@ -30,10 +26,8 @@ h1 { color:#ffcc00; margin-bottom:20px; }
 }
 .result-top { display:flex; align-items:center; gap:15px; }
 .result-top img { width:70px; height:70px; border-radius:6px; }
-
 .result-name { font-size:24px; font-weight:bold; }
 .result-region { font-size:14px; opacity:0.8; }
-
 .tier-box {
   margin-top:15px; display:flex; align-items:center;
   gap:8px; background:#238636;
@@ -41,8 +35,6 @@ h1 { color:#ffcc00; margin-bottom:20px; }
   border-radius:6px; font-weight:bold;
 }
 .tier-box img { width:22px; }
-
-/* ---- LEADERBOARD ---- */
 .leaderboard {
   display:flex; justify-content:space-between;
   max-width:1200px; margin:0 auto; gap:10px; overflow-x:auto;
@@ -67,8 +59,6 @@ h1 { color:#ffcc00; margin-bottom:20px; }
   border-radius:5px; opacity:0; transition:0.3s;
 }
 .player-row:hover .tooltip { opacity:1; }
-
-/* Buttons */
 button {
   padding:8px 14px; background:#238636;
   border:none; border-radius:6px; color:white;
@@ -86,13 +76,11 @@ button:hover { background:#2ea043; }
 
 <h1>Netheritepot Tierlist</h1>
 
-<!-- 🔍 SEARCH BAR -->
 <div class="search-container">
   <input type="text" id="search-input" placeholder="Search player...">
   <button onclick="searchPlayer()">Search</button>
 </div>
 
-<!-- 🔍 SEARCH RESULT CARD -->
 <div id="search-result">
   <div class="result-top">
     <img id="search-skin">
@@ -112,10 +100,8 @@ button:hover { background:#2ea043; }
   </div>
 </div>
 
-<!-- LEADERBOARD -->
 <div class="leaderboard" id="leaderboard-container"></div>
 
-<!-- ADMIN BUTTONS -->
 <div style="margin-top:20px;">
   <button onclick="addPlayer()">Add Player</button>
   <button onclick="removePlayer()">Remove Player</button>
@@ -129,10 +115,8 @@ const categoryMap = {
   "HT1":"T1","LT1":"T1","HT2":"T2","LT2":"T2","HT3":"T3","LT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5",
   "RHT1":"T1","RLT1":"T1","RHT2":"T2","RLT2":"T2","RHT3":"T3","RLT3":"T3"
 };
-
 const categories = ["T1","T2","T3","T4","T5"];
 
-/* Firebase Init */
 firebase.initializeApp({
   apiKey: "AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
   authDomain: "tierlist-3305a.firebaseapp.com",
@@ -145,107 +129,12 @@ firebase.initializeApp({
 
 const db = firebase.database();
 const playersRef = db.ref("players");
-
 let players = [];
 
-/* Load DB */
 playersRef.once("value", snapshot => {
   players = snapshot.val() || [];
-
   render();
 });
 
-/* Save */
 function savePlayers(){ playersRef.set(players); }
-
-/* Get head URL */
-function getHeadURL(name,type){
-  return type==="premium"
-    ? `https://mc-heads.net/avatar/${name}/40`
-    : `https://mc-heads.net/avatar/Steve/40`;
-}
-
-/* Render leaderboard */
-function render(){
-  const container = document.getElementById("leaderboard-container");
-  container.innerHTML = "";
-
-  const cols = {};
-  categories.forEach(cat=>{
-    const col = document.createElement("div");
-    col.className = "tier-column";
-    col.innerHTML = `<h2>${cat}</h2>`;
-    container.appendChild(col);
-    cols[cat] = col;
-  });
-
-  const ordered = players.slice().sort((a,b)=>{
-    const order = ["HT","RHT","LT","RLT"];
-    return order.indexOf(a.tier.slice(0,3)) - order.indexOf(b.tier.slice(0,3));
-  });
-
-  ordered.forEach(p=>{
-    const cat = categoryMap[p.tier];
-    if(!cat) return;
-
-    const row = document.createElement("div");
-    row.className = "player-row";
-    row.innerHTML = `
-      <img src="${p.skin}">
-      <span class="player-name">${p.name}
-        <span class="tooltip">${p.region} | ${p.tier}</span>
-      </span>
-    `;
-    cols[cat].appendChild(row);
-  });
-}
-
-/* Add Player */
-function addPlayer(){
-  const key = prompt("Admin key:");
-  if(key!==secretKey) return alert("Wrong key!");
-
-  const name = prompt("Name?");
-  const tier = prompt("Tier?");
-  const region = prompt("Region (AS, EU, NA, ME, AU)?").toUpperCase();
-  const type = prompt("Type (premium/crack)").toLowerCase();
-
-  if(!name || !tier || !region) return alert("Invalid");
-
-  const skin = getHeadURL(name,type);
-
-  players.push({ name, tier, region, type, skin });
-  savePlayers();
-  render();
-}
-
-/* Remove Player */
-function removePlayer(){
-  const key = prompt("Admin key:");
-  if(key!==secretKey) return alert("Wrong key!");
-
-  const name = prompt("Name to remove?");
-  players = players.filter(p=>p.name.toLowerCase()!==name.toLowerCase());
-  savePlayers();
-  render();
-}
-
-/* Search */
-function searchPlayer(){
-  const name = document.getElementById("search-input").value.trim().toLowerCase();
-  if(!name) return alert("Enter a name");
-
-  const p = players.find(pl=>pl.name.toLowerCase()===name);
-  if(!p) return alert("Player not found");
-
-  document.getElementById("search-result").style.display = "block";
-  document.getElementById("search-skin").src = p.skin;
-  document.getElementById("search-name").innerText = p.name;
-  document.getElementById("search-region").innerText = p.region;
-  document.getElementById("search-tier").innerText = p.tier;
-  document.getElementById("search-namemc").href = "https://namemc.com/profile/" + p.name;
-}
-</script>
-
-</body>
-</html>
+function getHeadURL(name,type){ return type==="premium"?`https://mc-heads.
