@@ -5,39 +5,153 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Netheritepot Tierlist</title>
 <style>
-body { font-family: Arial,sans-serif; background:#0d1117; color:#c9d1d9; text-align:center; padding:20px; }
-h1 { color:#ffcc00; margin-bottom:20px; }
+body {
+    font-family: Arial, sans-serif;
+    background:#0d1117;
+    color:#c9d1d9;
+    text-align:center;
+    padding:20px;
+}
 
-.search-container { margin-bottom:20px; }
-.search-container input { padding:6px 12px; border-radius:6px; border:none; width:200px; }
-.search-container button { padding:6px 12px; margin-left:5px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; }
-.search-container button:hover { background:#2ea043; }
+h1 {
+    color:#ffcc00;
+    margin-bottom:20px;
+}
 
-#search-result { margin-bottom:20px; display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; }
-.result-player { background:#161b22; padding:10px; border-radius:8px; display:flex; align-items:center; gap:10px; }
-.result-player img { width:40px; height:40px; border-radius:50%; border:1px solid #fff; }
-.tier-box { background:#238636; padding:2px 6px; border-radius:4px; display:flex; align-items:center; gap:4px; font-size:14px; }
-.tier-box img { width:16px; height:16px; }
+.search-container {
+    margin-bottom:20px;
+}
+.search-container input {
+    padding:6px 12px;
+    border-radius:6px;
+    border:none;
+    width:200px;
+}
+.search-container button {
+    padding:6px 12px;
+    margin-left:5px;
+    background:#238636;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    transition:0.2s;
+}
+.search-container button:hover {
+    background:#2ea043;
+}
 
-.leaderboard { display:flex; justify-content:space-between; max-width:1200px; margin:0 auto; gap:10px; overflow-x:auto; }
-.tier-column { flex:1; min-width:180px; }
-.tier-column h2 { text-align:center; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:5px; margin-bottom:5px; }
+#search-result {
+    margin-bottom:20px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+.result-player {
+    background:#161b22;
+    padding:10px;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+.result-player img {
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    border:1px solid #fff;
+}
+.tier-box {
+    background:#238636;
+    padding:2px 6px;
+    border-radius:4px;
+    display:flex;
+    align-items:center;
+    gap:4px;
+    font-size:14px;
+}
+.tier-box img {
+    width:16px;
+    height:16px;
+}
 
-.player-row { display:flex; align-items:center; gap:5px; margin-bottom:4px; position:relative; overflow:hidden; }
-.player-row img { width:24px; height:24px; border-radius:50%; border:1px solid #fff; }
-.player-name { transition: all 0.3s ease; cursor:pointer; white-space:nowrap; display:inline-block; }
-.player-name:hover { transform:translateX(10px); }
-.tooltip { position:absolute; left:100%; top:0; background:#238636; color:#fff; padding:2px 6px; border-radius:4px; font-size:12px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.3s; }
-.player-row:hover .tooltip { opacity:1; }
+.leaderboard {
+    display:flex;
+    justify-content:space-between;
+    max-width:1200px;
+    margin:0 auto;
+    gap:10px;
+    overflow-x:auto;
+}
+.tier-column {
+    flex:1;
+    min-width:180px;
+}
+.tier-column h2 {
+    text-align:center;
+    color:#58a6ff;
+    border-bottom:1px solid #30363d;
+    padding-bottom:5px;
+    margin-bottom:5px;
+}
 
-button { padding:6px 12px; margin-top:10px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; transition:0.3s; }
+.player-row {
+    display:flex;
+    align-items:center;
+    gap:5px;
+    margin-bottom:4px;
+    position:relative;
+}
+.player-row img {
+    width:24px;
+    height:24px;
+    border-radius:50%;
+    border:1px solid #fff;
+}
+.player-name {
+    cursor:pointer;
+    white-space:nowrap;
+    display:inline-block;
+    transition:0.2s;
+}
+.player-name:hover {
+    color:#ffcc00;
+}
+.tooltip {
+    position:absolute;
+    left:100%;
+    top:0;
+    background:#238636;
+    color:#fff;
+    padding:2px 6px;
+    border-radius:4px;
+    font-size:12px;
+    white-space:nowrap;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.3s;
+}
+.player-row:hover .tooltip {
+    opacity:1;
+}
+
+button {
+    padding:6px 12px;
+    margin-top:10px;
+    background:#238636;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    transition:0.3s;
+}
 button:hover { background:#2ea043; }
 </style>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 </head>
 <body>
 <h1>Netheritepot Tierlist</h1>
@@ -66,7 +180,6 @@ const categoryMap = {
 const categories = ["T1","T2","T3","T4","T5"];
 const regionList = ["AS","EU","ME","AU","NA"];
 
-// Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
   authDomain: "tierlist-3305a.firebaseapp.com",
@@ -82,16 +195,14 @@ const playersRef = db.ref("players");
 
 let players = [];
 
-// Default head URL
-function getHeadURL(name,type){ return type==="premium"?`https://mc-heads.net/avatar/${name}/32`:"https://mc-heads.net/avatar/Steve/32"; }
+function getHeadURL(name,type){
+    return type==="premium"?`https://mc-heads.net/avatar/${name}/32`:"https://mc-heads.net/avatar/Steve/32";
+}
 
-// Load players
 playersRef.once("value", snapshot => {
   const data = snapshot.val();
-  if(data){
-    players = data;
-  } else {
-    // Default players
+  if(data){ players = data; }
+  else{
     players = [
       { name:"Swight", tier:"HT1", region:"EU", type:"premium", skin:getHeadURL("Swight","premium") },
       { name:"Marlowww", tier:"LT2", region:"NA", type:"premium", skin:getHeadURL("Marlowww","premium") },
@@ -102,48 +213,40 @@ playersRef.once("value", snapshot => {
   render();
 });
 
-// Save to Firebase
 function savePlayers(){ playersRef.set(players); }
 
-// Render leaderboard
 function render(){
   const container = document.getElementById("leaderboard-container");
   container.innerHTML="";
   const cols = {};
   categories.forEach(cat=>{
     const col = document.createElement("div");
-    col.className = "tier-column";
+    col.className="tier-column";
     const h2 = document.createElement("h2");
     h2.textContent = cat;
     col.appendChild(h2);
     container.appendChild(col);
-    cols[cat] = col;
+    cols[cat]=col;
   });
 
-  const maxPlayers = Math.max(...categories.map(cat=>players.filter(p=>categoryMap[p.tier]===cat).length));
-
-  for(let i=0;i<maxPlayers;i++){
-    categories.forEach(cat=>{
-      const catPlayers = players.filter(p=>categoryMap[p.tier]===cat)
-        .sort((a,b)=>{
-          const order = ["HT","RHT","LT","RLT"];
-          return order.indexOf(a.tier.slice(0,2)) - order.indexOf(b.tier.slice(0,2));
-        });
-      if(catPlayers[i]){
-        const p = catPlayers[i];
-        const pDiv = document.createElement("div");
-        pDiv.className = "player-row";
-        pDiv.innerHTML = `<img src="${p.skin}" alt="${p.name}">
-                          <span class="player-name">${p.name}
-                            <span class="tooltip">${p.region} | ${p.tier}</span>
-                          </span>`;
-        cols[cat].appendChild(pDiv);
-      }
+  categories.forEach(cat=>{
+    const catPlayers = players.filter(p=>categoryMap[p.tier]===cat);
+    catPlayers.forEach(p=>{
+      const pDiv = document.createElement("div");
+      pDiv.className="player-row";
+      pDiv.innerHTML = `<img src="${p.skin}" alt="${p.name}">
+                        <span class="player-name">${p.name}
+                          <span class="tooltip">${p.region} | ${p.tier}</span>
+                        </span>
+                        <div class="tier-box">
+                          <img src="https://mctiers.com/tier_icons/nethop.svg" alt="nethop">
+                          <span>${p.tier}</span>
+                        </div>`;
+      cols[cat].appendChild(pDiv);
     });
-  }
+  });
 }
 
-// Add player
 function addPlayer(){
   const key = prompt("Enter admin key:");
   if(key!==secretKey){ alert("Unauthorized!"); return; }
@@ -157,18 +260,11 @@ function addPlayer(){
   const skin = getHeadURL(name,type);
   const existingIndex = players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
   if(existingIndex!==-1){
-    if(type==="premium") players[existingIndex].skin = skin;
-    players[existingIndex].tier = tier;
-    players[existingIndex].region = region;
-    players[existingIndex].type = type;
-  } else {
-    players.push({name,tier,region,type,skin});
-  }
-  savePlayers();
-  render();
+    players[existingIndex]={name,tier,region,type,skin};
+  } else { players.push({name,tier,region,type,skin}); }
+  savePlayers(); render();
 }
 
-// Remove player
 function removePlayer(){
   const key = prompt("Enter admin key:");
   if(key!==secretKey){ alert("Unauthorized!"); return; }
@@ -176,25 +272,23 @@ function removePlayer(){
   const index = players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
   if(index===-1){ alert("Player not found!"); return; }
   players.splice(index,1);
-  savePlayers();
-  render();
+  savePlayers(); render();
 }
 
-// Search player
 function searchPlayer(){
   const name = document.getElementById("search-input").value.toLowerCase();
   const p = players.find(pl=>pl.name.toLowerCase()===name);
   const resultDiv = document.getElementById("search-result");
-  resultDiv.innerHTML = "";
+  resultDiv.innerHTML="";
   if(!p){ alert("Player not found"); return; }
   const div = document.createElement("div");
-  div.className = "result-player";
-  div.innerHTML = `<img src="${p.skin}" alt="${p.name}">
-                   <span>${p.name}</span>
-                   <div class="tier-box">
-                     <img src="https://mctiers.com/tier_icons/nethop.svg" alt="helmet">
-                     <span>${p.tier}</span>
-                   </div>`;
+  div.className="result-player";
+  div.innerHTML=`<img src="${p.skin}" alt="${p.name}">
+                 <span>${p.name}</span>
+                 <div class="tier-box">
+                   <img src="https://mctiers.com/tier_icons/nethop.svg" alt="nethop">
+                   <span>${p.tier}</span>
+                 </div>`;
   resultDiv.appendChild(div);
 }
 </script>
