@@ -92,11 +92,7 @@ playersRef.once("value",snapshot=>{
   const data=snapshot.val();
   if(data){players=Array.isArray(data)?data:Object.values(data);}
   else{
-    players=[
-      {name:"Swight",tier:"HT1",region:"EU",type:"premium",skin:getHeadURL("Swight","premium"),aliases:[]},
-      {name:"Marlowww",tier:"LT2",region:"NA",type:"premium",skin:getHeadURL("Marlowww","premium"),aliases:[]},
-      {name:"ItzRealMe",tier:"HT3",region:"AS",type:"premium",skin:getHeadURL("ItzRealMe","premium"),aliases:[]}
-    ];
+    players=[];
     playersRef.set(players);
   }
   renderLeaderboard();
@@ -111,19 +107,23 @@ function renderLeaderboard(){
   const container=document.getElementById("leaderboard-container");
   container.innerHTML="";
   const cols={};
+
+  // Always create columns for all categories
   categories.forEach(cat=>{
     const col=document.createElement("div"); col.className="tier-column";
     const h2=document.createElement("h2"); h2.textContent=cat; col.appendChild(h2);
     const rows=document.createElement("div"); rows.className="rows"; col.appendChild(rows);
-    container.appendChild(col); cols[cat]=rows;
+    container.appendChild(col);
+    cols[cat]=rows;
   });
 
+  // Add players in HT -> LT -> Retired order, insertion order preserved
   categories.forEach(cat=>{
     const catPlayers=players.filter(p=>categoryMap[p.tier]===cat);
     const htPlayers=catPlayers.filter(p=>p.tier.startsWith("HT"));
     const ltPlayers=catPlayers.filter(p=>p.tier.startsWith("LT"));
     const retiredPlayers=catPlayers.filter(p=>p.tier.startsWith("RHT")||p.tier.startsWith("RLT"));
-    // no sorting inside subgroup to keep new players at end
+
     const sortedPlayers=[...htPlayers,...ltPlayers,...retiredPlayers];
 
     sortedPlayers.forEach(p=>{
