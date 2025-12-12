@@ -61,7 +61,6 @@
   <div class="small">Admin key required to add/remove. Premium players use live skin (mc-heads).</div>
 
 <script>
-/* CONFIG (unchanged) */
 const secretKey="aceppp1122";
 const firebaseConfig={
   apiKey:"AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
@@ -72,23 +71,19 @@ const firebaseConfig={
   messagingSenderId:"410709885310",
   appId:"1:410709885310:web:ceab1ca94e0f45513f332f"
 };
-
-const regionList=["AS","EU","ME","AU","NA"];
-const categories=["T1","T2","T3","T4","T5"];
-const categoryMap={"HT1":"T1","LT1":"T1","RHT1":"T1","RLT1":"T1","HT2":"T2","LT2":"T2","RHT2":"T2","RLT2":"T2","HT3":"T3","LT3":"T3","RHT3":"T3","RLT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5"};
-
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 const playersRef=db.ref("players");
 let players=[];
 
-/* STABLE SKIN URL (no extra UI changes) */
+const regionList=["AS","EU","ME","AU","NA"];
+const categories=["T1","T2","T3","T4","T5"];
+const categoryMap={"HT1":"T1","LT1":"T1","RHT1":"T1","RLT1":"T1","HT2":"T2","LT2":"T2","RHT2":"T2","RLT2":"T2","HT3":"T3","LT3":"T3","RHT3":"T3","RLT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5"};
+
 function getHeadURL(name,type="premium",size=32){
-  // stable mc-heads URL with default and nocache to reduce Steve fallback
   return `https://mc-heads.net/avatar/${encodeURIComponent(name)}?size=${size}&default=MHF_Steve&nocache=${Date.now()}`;
 }
 
-/* Load players (unchanged behavior) */
 playersRef.once("value", snapshot=>{
   const data=snapshot.val();
   if(data) players = Array.isArray(data)?data:Object.values(data);
@@ -96,10 +91,7 @@ playersRef.once("value", snapshot=>{
   renderLeaderboard();
 });
 
-/* Save - unchanged */
 function savePlayers(){ playersRef.set(players); }
-
-/* util */
 function n(s){ return (s||"").toLowerCase().trim(); }
 function findPlayerByNameOrAlias(q){
   const s=n(q);
@@ -110,7 +102,6 @@ function findPlayerByNameOrAlias(q){
   return null;
 }
 
-/* RENDER (unchanged logic: HT->LT->Retired, insertion order preserved) */
 function renderLeaderboard(){
   const container=document.getElementById("leaderboard-container");
   container.innerHTML="";
@@ -130,10 +121,7 @@ function renderLeaderboard(){
     const sortedPlayers=[...htPlayers,...ltPlayers,...retiredPlayers];
 
     sortedPlayers.forEach(p=>{
-      if(p.type==="premium"){
-        // refresh skin URL (no change to Firebase) so name changes reflect immediately
-        p.skin = getHeadURL(p.name,"premium",32);
-      }
+      if(p.type==="premium"){ p.skin = getHeadURL(p.name,"premium",32); }
       const row=document.createElement("div"); row.className="player-row";
       const head=document.createElement("img"); head.src=p.skin; head.alt=p.name; head.setAttribute("width","32"); head.className="head"; row.appendChild(head);
       const nameSpan=document.createElement("div"); nameSpan.className="player-name"; nameSpan.textContent=p.name; row.appendChild(nameSpan);
@@ -143,7 +131,6 @@ function renderLeaderboard(){
   });
 }
 
-/* SEARCH - removed alias note (per request) */
 async function searchPlayer(){
   const q=document.getElementById("search-input").value.trim();
   if(!q) return alert("Type a player name first.");
@@ -173,46 +160,30 @@ async function searchPlayer(){
       } else {
         alert("Not added. You can add via Add/Update.");
       }
-    } else {
-      alert(`"${q}" not found on Mojang or leaderboard.`);
-    }
-  }catch(e){
-    console.warn("Mojang check failed",e);
-    alert("Could not reach Mojang API.");
-  }
+    } else { alert(`"${q}" not found on Mojang or leaderboard.`); }
+  }catch(e){ console.warn(e); alert("Could not reach Mojang API."); }
 }
 
 function addPlayerPreFill(ign){
   if(!ign) return;
   (async ()=>{
-    // check Mojang API for latest current username
-    let apiData = null;
+    let apiData=null;
     try{
-      const r = await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(ign)}`);
-      if(r.ok) apiData = await r.json();
-    }catch(e){ apiData = null; }
+      const r=await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(ign)}`);
+      if(r.ok) apiData=await r.json();
+    }catch(e){ apiData=null; }
 
-    let finalName = ign;
-    if(apiData && apiData.name && apiData.name.toLowerCase() !== ign.toLowerCase()){
-      // warn + confirm
-      if(!confirm(`Warning: This premium player changed username.\nOld: ${ign}\nNew: ${apiData.name}\n\nContinue with NEW username?`)){
-        return;
-      }
-      finalName = apiData.name;
+    let finalName=ign;
+    if(apiData && apiData.name && apiData.name.toLowerCase()!==ign.toLowerCase()){
+      if(!confirm(`Warning: This premium player changed username.\nOld: ${ign}\nNew: ${apiData.name}\n\nContinue with NEW username?`)) return;
+      finalName=apiData.name;
     }
 
     const tier = prompt("Tier (HT1.. / RHT..):","HT1") || "HT1";
     const region = prompt("Region (AS, EU, ME, AU, NA):","NA").toUpperCase();
     const type = prompt("Account type (premium/crack):","premium").toLowerCase();
 
-    const newPlayer = {
-      name: finalName,
-      aliases: [],
-      tier,
-      region,
-      type,
-      skin: type==="premium"? getHeadURL(finalName,"premium",32) : getHeadURL("Steve","crack",32)
-    };
+    const newPlayer={ name: finalName, aliases: [], tier, region, type, skin:type==="premium"?getHeadURL(finalName,"premium",32):getHeadURL("Steve","crack",32) };
     players.push(newPlayer);
     savePlayers();
     renderLeaderboard();
@@ -220,91 +191,58 @@ function addPlayerPreFill(ign){
   })();
 }
 
-/* ADMIN (Add / Update) - keeps existing prompt flow but includes warning for premium name changes */
 async function addPlayer(){
   const key = prompt("Enter admin key:");
-  if(key !== secretKey){ alert("Unauthorized"); return; }
-
-  let inputName = prompt("Enter player IGN or alias:");
-  if(!inputName) return;
-  inputName = inputName.trim();
-
+  if(key!==secretKey){ alert("Unauthorized"); return; }
+  let inputName = prompt("Enter player IGN or alias:"); if(!inputName) return; inputName=inputName.trim();
   const existing = findPlayerByNameOrAlias(inputName);
   if(existing){
     const p = existing.player;
-    const newTier = prompt(`Player found (${p.name}). Enter tier:`, p.tier) || p.tier;
-    const newRegion = prompt("Region (AS, EU, ME, AU, NA):", p.region) || p.region;
-    const newType = prompt("Account type (premium/crack):", p.type || "premium") || p.type || "premium";
+    const newTier = prompt(`Player found (${p.name}). Enter tier:`,p.tier)||p.tier;
+    const newRegion = prompt("Region (AS, EU, ME, AU, NA):",p.region)||p.region;
+    const newType = prompt("Account type (premium/crack):",p.type||"premium")||p.type||"premium";
 
     if(confirm("Rename player? (OK = rename)")){
-      const newName = prompt("Enter new current IGN (exact):", p.name);
+      const newName = prompt("Enter new current IGN (exact):",p.name);
       if(newName && newName.trim()){
-        p.name = newName.trim();
-        if(newType.toLowerCase()==="premium"){
-          p.skin = getHeadURL(p.name,"premium",32);
-        } else {
-          p.skin = getHeadURL("Steve","crack",32);
-        }
+        p.name=newName.trim();
+        if(newType.toLowerCase()==="premium"){ p.skin=getHeadURL(p.name,"premium",32); }
+        else{ p.skin=getHeadURL("Steve","crack",32); }
       }
     }
 
-    p.tier = newTier;
-    p.region = newRegion.toUpperCase();
-    p.type = newType.toLowerCase();
-    if(p.type === "premium") p.skin = getHeadURL(p.name,"premium",32);
-    else p.skin = getHeadURL("Steve","crack",32);
+    p.tier=newTier; p.region=newRegion.toUpperCase(); p.type=newType.toLowerCase();
+    if(p.type==="premium"){ p.skin=getHeadURL(p.name,"premium",32); }
+    else{ p.skin=getHeadURL("Steve","crack",32); }
 
-    savePlayers();
-    renderLeaderboard();
-    alert("Player updated.");
-    return;
+    savePlayers(); renderLeaderboard(); alert("Player updated."); return;
   }
 
-  // not existing -> check Mojang and warn if changed
-  let apiData = null;
-  try{
-    const r = await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(inputName)}`);
-    if(r.ok) apiData = await r.json();
-  }catch(e){ apiData = null; }
+  let apiData=null;
+  try{ const r=await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(inputName)}`); if(r.ok) apiData=await r.json(); }catch(e){ apiData=null; }
 
-  let finalName = inputName;
-  if(apiData && apiData.name && apiData.name.toLowerCase() !== inputName.toLowerCase()){
-    if(!confirm(`Warning: This premium player changed username.\nOld: ${inputName}\nNew: ${apiData.name}\n\nContinue with NEW username?`)){
-      return;
-    }
-    finalName = apiData.name;
+  let finalName=inputName;
+  if(apiData && apiData.name && apiData.name.toLowerCase()!==inputName.toLowerCase()){
+    if(!confirm(`Warning: This premium player changed username.\nOld: ${inputName}\nNew: ${apiData.name}\n\nContinue with NEW username?`)) return;
+    finalName=apiData.name;
   }
 
-  const tier = prompt("Tier (HT1.. / RHT..):","HT1") || "HT1";
+  const tier = prompt("Tier (HT1.. / RHT..):","HT1")||"HT1";
   const region = prompt("Region (AS, EU, ME, AU, NA):","NA").toUpperCase();
   const type = prompt("Account type (premium/crack):","premium").toLowerCase();
+  const newPlayer={ name: finalName, aliases: [], tier, region, type, skin:type==="premium"?getHeadURL(finalName,"premium",32):getHeadURL("Steve","crack",32) };
 
-  const newPlayer = {
-    name: finalName,
-    aliases: [],
-    tier,
-    region,
-    type,
-    skin: type==="premium"? getHeadURL(finalName,"premium",32) : getHeadURL("Steve","crack",32)
-  };
-
-  players.push(newPlayer);
-  savePlayers();
-  renderLeaderboard();
-  alert("Added.");
+  players.push(newPlayer); savePlayers(); renderLeaderboard(); alert("Added.");
 }
 
 function removePlayer(){
   const key = prompt("Enter admin key:");
-  if(key !== secretKey){ alert("Unauthorized"); return; }
-  const name = prompt("Enter exact IGN to remove (or alias):");
-  if(!name) return;
-  const before = players.length;
-  players = players.filter(p=> n(p.name) !== n(name) && !(Array.isArray(p.aliases) && p.aliases.map(a=>n(a)).includes(n(name))));
-  if(players.length === before){ alert("Player not found."); return; }
-  savePlayers();
-  renderLeaderboard();
-  alert("Removed.");
+  if(key!==secretKey){ alert("Unauthorized"); return; }
+  const name = prompt("Enter exact IGN to remove (or alias):"); if(!name) return;
+  const before=players.length;
+  players = players.filter(p=> n(p.name)!==n(name) && !(Array.isArray(p.aliases)&&p.aliases.map(a=>n(a)).includes(n(name))));
+  if(players.length===before){ alert("Player not found."); return; }
+  savePlayers(); renderLeaderboard(); alert("Removed.");
 }
 </script>
 </body>
