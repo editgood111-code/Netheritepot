@@ -1,233 +1,99 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Netheritepot — MC Tier Hover (No Firebase)</title>
-<style>
-  :root{
-    --bg:#0d1117;
-    --card:#161b22;
-    --row:#1b1f24;
-    --accent:#238636;
-    --accent-text:#fff;
-    --title:#ffcc00;
-    --coltitle:#58a6ff;
-  }
-  body{
-    margin:0;
-    font-family:Inter, Arial, sans-serif;
-    background:var(--bg);
-    color:#c9d1d9;
-    padding:20px;
-    text-align:center;
-  }
-  h1{
-    color:var(--title);
-    margin:0 0 18px 0;
-    font-size:22px;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MC-Tier Style Final</title>
+  <style>
+    body {
+      background: #0d0d0d;
+      font-family: Arial, sans-serif;
+      color: white;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+    }
 
-  /* container */
-  .leaderboard{
-    display:flex;
-    gap:14px;
-    overflow-x:auto;
-    padding:12px 6px 18px 6px;
-    align-items:flex-start;
-  }
+    .tierlist {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      width: 900px;
+    }
 
-  /* column */
-  .tier-column{
-    background:var(--card);
-    min-width:188px;
-    width:188px;
-    border-radius:10px;
-    padding:10px;
-    box-sizing:border-box;
-    flex:0 0 188px;
-  }
-  .tier-column h2{
-    font-size:14px;
-    color:var(--coltitle);
-    margin:0 0 8px 0;
-    padding-bottom:6px;
-    border-bottom:1px solid #30363d;
-    text-align:center;
-  }
+    .player {
+      width: 180px;
+      height: 220px;
+      background: #1a1a1a;
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      transition: transform 0.25s ease;
+    }
 
-  /* player row */
-  .player-row{
-    position:relative;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    background:var(--row);
-    padding:6px;
-    border-radius:8px;
-    margin-bottom:8px;
-    overflow:hidden; /* important so hover panel doesn't overflow */
-    transition:background .12s;
-    cursor:pointer;
-  }
-  .player-row:hover{ background:#202427; }
+    .player:hover {
+      transform: scale(1.06);
+    }
 
-  .player-row img.avatar{
-    width:30px; height:30px; border-radius:50%; border:1px solid #fff;
-    flex:0 0 30px;
-  }
-  .player-name{
-    font-size:14px;
-    white-space:nowrap;
-    text-overflow:ellipsis;
-    overflow:hidden;
-    max-width:70px;
-    z-index:3; /* keep above hover panel */
-  }
+    .pfp {
+      width: 100%;
+      height: 140px;
+      background-size: cover;
+      background-position: center;
+    }
 
-  /* hover panel that slides in from the right and covers half area */
-  .hover-panel{
-    position:absolute;
-    top:0;
-    right:-100%;
-    height:100%;
-    width:62%;             /* half-ish area like mctier */
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:var(--accent);
-    color:var(--accent-text);
-    font-weight:600;
-    font-size:13px;
-    transition: right .20s cubic-bezier(.2,.9,.2,1), opacity .18s;
-    border-radius:6px;
-    pointer-events:none;
-    z-index:2;
-    box-sizing:border-box;
-    padding:0 8px;
-  }
-  /* when hovered slide to visible (right:0) */
-  .player-row:hover .hover-panel{
-    right:0;
-    opacity:1;
-  }
+    .name {
+      text-align: center;
+      padding: 10px 0;
+      font-size: 18px;
+      font-weight: bold;
+    }
 
-  /* Tier badge inside column (keeps visible even when hover slides) */
-  .tier-badge{
-    margin-left:auto;
-    display:flex;
-    align-items:center;
-    gap:6px;
-    background:transparent;
-    z-index:3;
-  }
-  .tier-badge img{ width:18px; height:18px; }
-  .tier-badge span{ font-size:12px; color:#cfead0; font-weight:600; }
+    /* SLIDE TIER */
+    .tierbox {
+      position: absolute;
+      top: 0;
+      right: -100%;
+      width: 50%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: bold;
+      transition: right 0.28s ease;
+      pointer-events: none;
+    }
 
-  /* search (client-side) */
-  .search-wrap{ margin:14px 0 8px; display:flex; justify-content:center; gap:8px; }
-  .search-wrap input{
-    width:220px; padding:8px 10px; border-radius:8px; border:0; outline:none;
-    background:#0f1418; color:#cfe0d0; box-shadow:inset 0 0 0 1px #15191c;
-  }
-  .search-wrap button{
-    padding:8px 12px; border-radius:8px; border:0; background:var(--accent); color:#fff; cursor:pointer;
-  }
-
-  /* responsive tweaks */
-  @media (max-width:520px){
-    .tier-column{ min-width:150px; width:150px; }
-    .player-name{ max-width:58px; }
-    .hover-panel{ width:64%; font-size:12px; }
-  }
-</style>
+    .player:hover .tierbox {
+      right: 0;
+    }
+  </style>
 </head>
 <body>
-  <h1>Netheritepot Tierlist</h1>
+  <div class="tierlist">
 
-  <div class="search-wrap">
-    <input id="searchInput" placeholder="Search player (client-side)..." />
-    <button id="searchBtn">Search</button>
-    <button id="clearBtn">Clear</button>
+    <div class="player">
+      <div class="pfp" style="background-image:url('https://i.imgur.com/0Z3ZQyY.png');"></div>
+      <div class="name">Player 1</div>
+      <div class="tierbox">EU | HT3</div>
+    </div>
+
+    <div class="player">
+      <div class="pfp" style="background-image:url('https://i.imgur.com/0Z3ZQyY.png');"></div>
+      <div class="name">Player 2</div>
+      <div class="tierbox">AS | LT1</div>
+    </div>
+
+    <div class="player">
+      <div class="pfp" style="background-image:url('https://i.imgur.com/0Z3ZQyY.png');"></div>
+      <div class="name">Player 3</div>
+      <div class="tierbox">NA | R2</div>
+    </div>
+
   </div>
-
-  <div class="leaderboard" id="leaderboard"></div>
-
-<script>
-/* -----------------------------
-   Pure client-side data ONLY
-   No Firebase, no network calls
-   ----------------------------- */
-const players = [
-  { name:"Swight", tier:"LT2", region:"EU", skin:"https://mc-heads.net/avatar/Swight/32" },
-  { name:"Marlowww", tier:"HT3", region:"AS", skin:"https://mc-heads.net/avatar/Marlowww/32" },
-  { name:"ItzRealMe", tier:"HT1", region:"ME", skin:"https://mc-heads.net/avatar/ItzRealMe/32" },
-  { name:"PlayerX", tier:"LT1", region:"NA", skin:"https://mc-heads.net/avatar/Steve/32" },
-  { name:"Alpha", tier:"HT2", region:"EU", skin:"https://mc-heads.net/avatar/Alpha/32" }
-];
-
-/* which categories to show (T1..T5) and mapping */
-const categories = ["T1","T2","T3","T4","T5"];
-const map = { HT1:"T1", LT1:"T1", HT2:"T2", LT2:"T2", HT3:"T3", LT3:"T3", HT4:"T4", LT4:"T4", HT5:"T5", LT5:"T5",
-              RHT1:"T1", RLT1:"T1", RHT2:"T2", RLT2:"T2", RHT3:"T3", RLT3:"T3" };
-
-/* Tier icon URL (nethop) - kept as requested */
-const NETHOP_ICON = "https://mctiers.com/tier_icons/nethop.svg";
-
-/* render columns and players */
-function renderBoard(filtered = null){
-  const list = filtered ?? players;
-  const board = document.getElementById("leaderboard");
-  board.innerHTML = "";
-
-  for(const cat of categories){
-    const col = document.createElement("div");
-    col.className = "tier-column";
-    col.innerHTML = `<h2>${cat}</h2>`;
-    // players for this column (keep insertion order - no ranking numbers)
-    const colPlayers = list.filter(p => map[p.tier] === cat);
-    colPlayers.forEach(p => {
-      const row = document.createElement("div");
-      row.className = "player-row";
-      row.innerHTML = `
-        <img class="avatar" src="${p.skin}" alt="${p.name}">
-        <div class="player-name" title="${p.name}">${p.name}</div>
-        <div class="tier-badge">
-          <img src="${NETHOP_ICON}" alt="nethop">
-          <span>${p.tier}</span>
-        </div>
-        <div class="hover-panel">${p.region} | ${p.tier}</div>
-      `;
-      // accessibility: on keyboard focus also show hover panel (optional)
-      row.addEventListener("focusin", ()=> row.querySelector(".hover-panel").style.right = "0");
-      row.addEventListener("focusout", ()=> row.querySelector(".hover-panel").style.right = "-100%");
-      col.appendChild(row);
-    });
-    board.appendChild(col);
-  }
-}
-
-/* client-side search: exact name (case-insensitive) or partial */
-document.getElementById("searchBtn").addEventListener("click", ()=>{
-  const q = document.getElementById("searchInput").value.trim().toLowerCase();
-  if(!q){ renderBoard(); return; }
-  const found = players.filter(p => p.name.toLowerCase().includes(q));
-  if(found.length === 0){
-    alert("No results (client-side)");
-    return;
-  }
-  renderBoard(found);
-});
-document.getElementById("clearBtn").addEventListener("click", ()=>{
-  document.getElementById("searchInput").value = "";
-  renderBoard();
-});
-document.getElementById("searchInput").addEventListener("keydown", e => {
-  if(e.key === "Enter") document.getElementById("searchBtn").click();
-});
-
-/* initial paint */
-renderBoard();
-</script>
 </body>
 </html>
