@@ -6,25 +6,25 @@
 <title>Netheritepot Tierlist — MC-Tier Final</title>
 <style>
 body { font-family: Arial, sans-serif; background:#0d1117; color:#c9d1d9; text-align:center; padding:20px; }
-h1 { color:#ffcc00; margin-bottom:25px; }
+h1 { color:#ffcc00; margin-bottom:20px; }
 
-.search-container { margin-bottom:25px; }
-.search-container input { padding:7px 14px; border-radius:6px; border:none; width:220px; }
-.search-container button { padding:7px 14px; margin-left:5px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; }
+.search-container { margin-bottom:20px; }
+.search-container input { padding:6px 12px; border-radius:6px; border:none; width:200px; }
+.search-container button { padding:6px 12px; margin-left:5px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; }
 .search-container button:hover { background:#2ea043; }
 
-#search-result { margin-bottom:25px; display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; }
-.result-player { background:#161b22; padding:12px; border-radius:10px; display:flex; align-items:center; gap:12px; }
-.result-player img { width:45px; height:45px; border-radius:50%; border:1px solid #fff; }
-.tier-box { padding:3px 8px; display:flex; align-items:center; gap:6px; font-size:15px; }
+#search-result { margin-bottom:20px; display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; }
+.result-player { background:#161b22; padding:8px; border-radius:8px; display:flex; align-items:center; gap:10px; position:relative; overflow:hidden; }
+.result-player img { width:36px; height:36px; border-radius:50%; border:1px solid #fff; }
+.tier-box { padding:2px 6px; display:flex; align-items:center; gap:4px; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-.leaderboard { display:flex; justify-content:space-between; max-width:1250px; margin:0 auto; gap:12px; overflow-x:auto; }
-.tier-column { flex:1; min-width:190px; padding:10px; border-radius:10px; }
-.tier-column h2 { text-align:center; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:6px; margin-bottom:8px; }
+.leaderboard { display:flex; justify-content:space-between; max-width:1100px; margin:0 auto; gap:8px; overflow-x:auto; }
+.tier-column { flex:1; min-width:160px; padding:6px; border-radius:8px; }
+.tier-column h2 { text-align:center; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:5px; margin-bottom:5px; }
 
-.player-row { position:relative; padding:8px; border-radius:10px; margin-bottom:6px; display:flex; align-items:center; gap:8px; overflow:hidden; background:#0f1318; }
-.player-row img { width:28px; height:28px; border-radius:6px; border:1px solid #fff; }
-.player-name { font-size:15px; font-weight:600; z-index:3; position:relative; }
+.player-row { position:relative; padding:6px; border-radius:8px; margin-bottom:4px; display:flex; align-items:center; gap:6px; overflow:hidden; background:#0f1318; }
+.player-row img { width:24px; height:24px; border-radius:6px; border:1px solid #fff; flex-shrink:0; }
+.player-name { font-size:14px; font-weight:600; max-width:50%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; z-index:3; position:relative; }
 
 .slide-tier {
   position:absolute;
@@ -37,15 +37,18 @@ h1 { color:#ffcc00; margin-bottom:25px; }
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:15px;
+  font-size:14px;
   font-weight:bold;
-  transition:right 0.3s ease;
+  transition:right 0.28s ease;
   pointer-events:none;
   z-index:2;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 }
 .player-row:hover .slide-tier { right:0; }
 
-button { padding:7px 14px; margin-top:15px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; transition:0.3s; }
+button { padding:6px 12px; margin-top:10px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; transition:0.3s; }
 button:hover { background:#2ea043; }
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -59,7 +62,7 @@ button:hover { background:#2ea043; }
 </div>
 <div id="search-result"></div>
 <div class="leaderboard" id="leaderboard-container"></div>
-<div style="margin-top:25px;">
+<div style="margin-top:20px;">
   <button onclick="addPlayer()">Add / Update Player</button>
   <button onclick="removePlayer()">Remove Player</button>
 </div>
@@ -76,14 +79,7 @@ let players=[];
 function getHeadURL(name,type){return type==="premium"?`https://mc-heads.net/avatar/${name}/32`:"https://mc-heads.net/avatar/Steve/32";}
 playersRef.once("value",snap=>{const d=snap.val();if(d)players=d;else{players=[{name:"Swight",tier:"HT1",region:"EU",type:"premium",skin:getHeadURL("Swight","premium")},{name:"Marlowww",tier:"LT2",region:"NA",type:"premium",skin:getHeadURL("Marlowww","premium")},{name:"ItzRealMe",tier:"HT3",region:"AS",type:"premium",skin:getHeadURL("ItzRealMe","premium")}];playersRef.set(players);}render();});
 function savePlayers(){playersRef.set(players);}
-function render(){
-const box=document.getElementById("leaderboard-container");box.innerHTML="";
-const cols={};categories.forEach(c=>{const col=document.createElement("div");col.className="tier-column";col.innerHTML=`<h2>${c}</h2>`;box.appendChild(col);cols[c]=col;});
-const maxRows=Math.max(...categories.map(c=>players.filter(p=>categoryMap[p.tier]===c).length));
-for(let i=0;i<maxRows;i++){categories.forEach(cat=>{const list=players.filter(p=>categoryMap[p.tier]===cat).sort((a,b)=>{const o=["HT","RHT","LT","RLT"];return o.indexOf(a.tier.slice(0,2))-o.indexOf(b.tier.slice(0,2));});
-if(list[i]){const p=list[i];const row=document.createElement("div");row.className="player-row";
-row.innerHTML=`<img src="${p.skin}"><span class="player-name">${p.name}</span><div class="slide-tier">${p.region} | ${p.tier}</div>`;
-cols[cat].appendChild(row);}});}}
+function render(){const box=document.getElementById("leaderboard-container");box.innerHTML="";const cols={};categories.forEach(c=>{const col=document.createElement("div");col.className="tier-column";col.innerHTML=`<h2>${c}</h2>`;box.appendChild(col);cols[c]=col;});const maxRows=Math.max(...categories.map(c=>players.filter(p=>categoryMap[p.tier]===c).length));for(let i=0;i<maxRows;i++){categories.forEach(cat=>{const list=players.filter(p=>categoryMap[p.tier]===cat).sort((a,b)=>{const o=["HT","RHT","LT","RLT"];return o.indexOf(a.tier.slice(0,2))-o.indexOf(b.tier.slice(0,2));});if(list[i]){const p=list[i];const row=document.createElement("div");row.className="player-row";row.innerHTML=`<img src="${p.skin}"><span class="player-name" title="${p.name}">${p.name}</span><div class="slide-tier">${p.region} | ${p.tier}</div>`;cols[cat].appendChild(row);}});}}
 function addPlayer(){const key=prompt("Enter admin key:");if(key!==secretKey)return alert("Unauthorized");const name=prompt("Player name?");const tier=prompt("Tier?");const region=prompt("Region?");const type=prompt("premium/crack?");if(!Object.keys(categoryMap).includes(tier)||!regionList.includes(region.toUpperCase()))return alert("Invalid");const skin=getHeadURL(name,type);const ex=players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());if(ex!==-1){players[ex]={name,tier,region:region.toUpperCase(),type,skin};}else players.push({name,tier,region:region.toUpperCase(),type,skin});savePlayers();render();}
 function removePlayer(){const key=prompt("Enter admin key:");if(key!==secretKey)return alert("Unauthorized");const name=prompt("Player name?");const i=players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());if(i===-1)return alert("Not found");players.splice(i,1);savePlayers();render();}
 function searchPlayer(){const name=document.getElementById("search-input").value.toLowerCase();const p=players.find(a=>a.name.toLowerCase()===name);const box=document.getElementById("search-result");box.innerHTML="";if(!p)return alert("Not found");box.innerHTML=`<div class='result-player'><img src='${p.skin}'><strong>${p.name}</strong><div class='tier-box'>${p.region} | ${p.tier}</div></div>`;}
