@@ -1,295 +1,233 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Netheritepot Tierlist</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Netheritepot — MC Tier Hover (No Firebase)</title>
 <style>
-/* Body & Fonts */
-body {
-    font-family: "Inter", Arial, sans-serif;
-    background:#0d1117;
-    color:#c9d1d9;
+  :root{
+    --bg:#0d1117;
+    --card:#161b22;
+    --row:#1b1f24;
+    --accent:#238636;
+    --accent-text:#fff;
+    --title:#ffcc00;
+    --coltitle:#58a6ff;
+  }
+  body{
     margin:0;
+    font-family:Inter, Arial, sans-serif;
+    background:var(--bg);
+    color:#c9d1d9;
     padding:20px;
     text-align:center;
-}
+  }
+  h1{
+    color:var(--title);
+    margin:0 0 18px 0;
+    font-size:22px;
+  }
 
-/* Title */
-h1 {
-    color:#ffcc00;
-    font-size:2em;
-    margin-bottom:20px;
-}
-
-/* Search */
-.search-container {
-    margin-bottom:20px;
-}
-.search-container input {
-    padding:8px 12px;
-    border-radius:6px;
-    border:none;
-    width:220px;
-    font-size:14px;
-}
-.search-container button {
-    padding:8px 12px;
-    margin-left:5px;
-    background:#238636;
-    color:white;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    transition:0.2s;
-    font-size:14px;
-}
-.search-container button:hover {
-    background:#2ea043;
-}
-
-/* Search Result */
-#search-result {
+  /* container */
+  .leaderboard{
     display:flex;
-    justify-content:center;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-bottom:20px;
-}
-.result-player {
-    background:#161b22;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:8px 12px;
-    border-radius:8px;
-    min-width:200px;
-}
-.result-player img {
-    width:36px;
-    height:36px;
-    border-radius:50%;
-    border:1px solid #fff;
-}
-.tier-box {
-    display:flex;
-    align-items:center;
-    gap:4px;
-    background:#238636;
-    padding:2px 6px;
-    border-radius:4px;
-    font-size:14px;
-}
-.tier-box img {
-    width:16px;
-    height:16px;
-}
-
-/* Leaderboard */
-.leaderboard {
-    display:flex;
-    justify-content:flex-start;
-    gap:12px;
+    gap:14px;
     overflow-x:auto;
-    padding-bottom:10px;
-}
-.tier-column {
-    flex:0 0 180px;
-    background:#161b22;
-    border-radius:8px;
-    padding:8px;
-}
-.tier-column h2 {
-    text-align:center;
-    color:#58a6ff;
-    font-size:16px;
-    border-bottom:1px solid #30363d;
-    padding-bottom:4px;
-    margin-bottom:6px;
-}
+    padding:12px 6px 18px 6px;
+    align-items:flex-start;
+  }
 
-/* Player Row */
-.player-row {
+  /* column */
+  .tier-column{
+    background:var(--card);
+    min-width:188px;
+    width:188px;
+    border-radius:10px;
+    padding:10px;
+    box-sizing:border-box;
+    flex:0 0 188px;
+  }
+  .tier-column h2{
+    font-size:14px;
+    color:var(--coltitle);
+    margin:0 0 8px 0;
+    padding-bottom:6px;
+    border-bottom:1px solid #30363d;
+    text-align:center;
+  }
+
+  /* player row */
+  .player-row{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--row);
+    padding:6px;
+    border-radius:8px;
+    margin-bottom:8px;
+    overflow:hidden; /* important so hover panel doesn't overflow */
+    transition:background .12s;
+    cursor:pointer;
+  }
+  .player-row:hover{ background:#202427; }
+
+  .player-row img.avatar{
+    width:30px; height:30px; border-radius:50%; border:1px solid #fff;
+    flex:0 0 30px;
+  }
+  .player-name{
+    font-size:14px;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    overflow:hidden;
+    max-width:70px;
+    z-index:3; /* keep above hover panel */
+  }
+
+  /* hover panel that slides in from the right and covers half area */
+  .hover-panel{
+    position:absolute;
+    top:0;
+    right:-100%;
+    height:100%;
+    width:62%;             /* half-ish area like mctier */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--accent);
+    color:var(--accent-text);
+    font-weight:600;
+    font-size:13px;
+    transition: right .20s cubic-bezier(.2,.9,.2,1), opacity .18s;
+    border-radius:6px;
+    pointer-events:none;
+    z-index:2;
+    box-sizing:border-box;
+    padding:0 8px;
+  }
+  /* when hovered slide to visible (right:0) */
+  .player-row:hover .hover-panel{
+    right:0;
+    opacity:1;
+  }
+
+  /* Tier badge inside column (keeps visible even when hover slides) */
+  .tier-badge{
+    margin-left:auto;
     display:flex;
     align-items:center;
     gap:6px;
-    margin-bottom:6px;
-    padding:2px;
-    position:relative;
-    transition:0.2s;
-}
-.player-row:hover { background:#21262d; border-radius:4px; }
-.player-row img {
-    width:28px;
-    height:28px;
-    border-radius:50%;
-    border:1px solid #fff;
-}
-.player-name {
-    white-space:nowrap;
-    font-size:14px;
-    cursor:pointer;
-}
-.tooltip {
-    position:absolute;
-    left:100%;
-    top:0;
-    transform:translateX(4px);
-    background:#238636;
-    color:#fff;
-    padding:2px 6px;
-    border-radius:4px;
-    font-size:12px;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity 0.2s;
-    white-space:nowrap;
-}
-.player-row:hover .tooltip {
-    opacity:1;
-}
+    background:transparent;
+    z-index:3;
+  }
+  .tier-badge img{ width:18px; height:18px; }
+  .tier-badge span{ font-size:12px; color:#cfead0; font-weight:600; }
 
-/* Admin buttons */
-button.admin-btn {
-    margin-top:12px;
-    background:#238636;
-    color:#fff;
-    border:none;
-    border-radius:6px;
-    padding:8px 12px;
-    cursor:pointer;
-    transition:0.2s;
-}
-button.admin-btn:hover { background:#2ea043; }
+  /* search (client-side) */
+  .search-wrap{ margin:14px 0 8px; display:flex; justify-content:center; gap:8px; }
+  .search-wrap input{
+    width:220px; padding:8px 10px; border-radius:8px; border:0; outline:none;
+    background:#0f1418; color:#cfe0d0; box-shadow:inset 0 0 0 1px #15191c;
+  }
+  .search-wrap button{
+    padding:8px 12px; border-radius:8px; border:0; background:var(--accent); color:#fff; cursor:pointer;
+  }
+
+  /* responsive tweaks */
+  @media (max-width:520px){
+    .tier-column{ min-width:150px; width:150px; }
+    .player-name{ max-width:58px; }
+    .hover-panel{ width:64%; font-size:12px; }
+  }
 </style>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-<h1>Netheritepot Tierlist</h1>
+  <h1>Netheritepot Tierlist</h1>
 
-<div class="search-container">
-    <input type="text" id="search-input" placeholder="Search player...">
-    <button onclick="searchPlayer()">Search</button>
-</div>
+  <div class="search-wrap">
+    <input id="searchInput" placeholder="Search player (client-side)..." />
+    <button id="searchBtn">Search</button>
+    <button id="clearBtn">Clear</button>
+  </div>
 
-<div id="search-result"></div>
-
-<div class="leaderboard" id="leaderboard-container"></div>
-
-<div style="margin-top:20px;">
-    <button class="admin-btn" onclick="addPlayer()">Add Player</button>
-    <button class="admin-btn" onclick="removePlayer()">Remove Player</button>
-</div>
+  <div class="leaderboard" id="leaderboard"></div>
 
 <script>
-const secretKey = "aceppp1122";
-const categoryMap = {"HT1":"T1","LT1":"T1","HT2":"T2","LT2":"T2","HT3":"T3","LT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5","RHT1":"T1","RLT1":"T1","RHT2":"T2","RLT2":"T2","RHT3":"T3","RLT3":"T3"};
+/* -----------------------------
+   Pure client-side data ONLY
+   No Firebase, no network calls
+   ----------------------------- */
+const players = [
+  { name:"Swight", tier:"LT2", region:"EU", skin:"https://mc-heads.net/avatar/Swight/32" },
+  { name:"Marlowww", tier:"HT3", region:"AS", skin:"https://mc-heads.net/avatar/Marlowww/32" },
+  { name:"ItzRealMe", tier:"HT1", region:"ME", skin:"https://mc-heads.net/avatar/ItzRealMe/32" },
+  { name:"PlayerX", tier:"LT1", region:"NA", skin:"https://mc-heads.net/avatar/Steve/32" },
+  { name:"Alpha", tier:"HT2", region:"EU", skin:"https://mc-heads.net/avatar/Alpha/32" }
+];
+
+/* which categories to show (T1..T5) and mapping */
 const categories = ["T1","T2","T3","T4","T5"];
-const regionList = ["AS","EU","ME","AU","NA"];
+const map = { HT1:"T1", LT1:"T1", HT2:"T2", LT2:"T2", HT3:"T3", LT3:"T3", HT4:"T4", LT4:"T4", HT5:"T5", LT5:"T5",
+              RHT1:"T1", RLT1:"T1", RHT2:"T2", RLT2:"T2", RHT3:"T3", RLT3:"T3" };
 
-// Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
-    authDomain: "tierlist-3305a.firebaseapp.com",
-    databaseURL: "https://tierlist-3305a-default-rtdb.firebaseio.com",
-    projectId: "tierlist-3305a",
-    storageBucket: "tierlist-3305a.firebasestorage.app",
-    messagingSenderId: "410709885310",
-    appId: "1:410709885310:web:ceab1ca94e0f45513f332f"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const playersRef = db.ref("players");
+/* Tier icon URL (nethop) - kept as requested */
+const NETHOP_ICON = "https://mctiers.com/tier_icons/nethop.svg";
 
-let players = [];
+/* render columns and players */
+function renderBoard(filtered = null){
+  const list = filtered ?? players;
+  const board = document.getElementById("leaderboard");
+  board.innerHTML = "";
 
-function getHeadURL(name,type){
-    return type==="premium"?`https://mc-heads.net/avatar/${name}/32`:"https://mc-heads.net/avatar/Steve/32";
+  for(const cat of categories){
+    const col = document.createElement("div");
+    col.className = "tier-column";
+    col.innerHTML = `<h2>${cat}</h2>`;
+    // players for this column (keep insertion order - no ranking numbers)
+    const colPlayers = list.filter(p => map[p.tier] === cat);
+    colPlayers.forEach(p => {
+      const row = document.createElement("div");
+      row.className = "player-row";
+      row.innerHTML = `
+        <img class="avatar" src="${p.skin}" alt="${p.name}">
+        <div class="player-name" title="${p.name}">${p.name}</div>
+        <div class="tier-badge">
+          <img src="${NETHOP_ICON}" alt="nethop">
+          <span>${p.tier}</span>
+        </div>
+        <div class="hover-panel">${p.region} | ${p.tier}</div>
+      `;
+      // accessibility: on keyboard focus also show hover panel (optional)
+      row.addEventListener("focusin", ()=> row.querySelector(".hover-panel").style.right = "0");
+      row.addEventListener("focusout", ()=> row.querySelector(".hover-panel").style.right = "-100%");
+      col.appendChild(row);
+    });
+    board.appendChild(col);
+  }
 }
 
-playersRef.once("value", snapshot=>{
-    const data = snapshot.val();
-    if(data) players=data;
-    else {
-        players=[
-            {name:"Swight", tier:"HT1", region:"EU", type:"premium", skin:getHeadURL("Swight","premium")},
-            {name:"Marlowww", tier:"LT2", region:"NA", type:"premium", skin:getHeadURL("Marlowww","premium")},
-            {name:"ItzRealMe", tier:"HT3", region:"AS", type:"premium", skin:getHeadURL("ItzRealMe","premium")}
-        ];
-        playersRef.set(players);
-    }
-    render();
+/* client-side search: exact name (case-insensitive) or partial */
+document.getElementById("searchBtn").addEventListener("click", ()=>{
+  const q = document.getElementById("searchInput").value.trim().toLowerCase();
+  if(!q){ renderBoard(); return; }
+  const found = players.filter(p => p.name.toLowerCase().includes(q));
+  if(found.length === 0){
+    alert("No results (client-side)");
+    return;
+  }
+  renderBoard(found);
+});
+document.getElementById("clearBtn").addEventListener("click", ()=>{
+  document.getElementById("searchInput").value = "";
+  renderBoard();
+});
+document.getElementById("searchInput").addEventListener("keydown", e => {
+  if(e.key === "Enter") document.getElementById("searchBtn").click();
 });
 
-function savePlayers(){ playersRef.set(players); }
-
-function render(){
-    const container=document.getElementById("leaderboard-container");
-    container.innerHTML="";
-    const cols={};
-    categories.forEach(cat=>{
-        const col=document.createElement("div");
-        col.className="tier-column";
-        const h2=document.createElement("h2");
-        h2.textContent=cat;
-        col.appendChild(h2);
-        container.appendChild(col);
-        cols[cat]=col;
-    });
-    categories.forEach(cat=>{
-        const catPlayers=players.filter(p=>categoryMap[p.tier]===cat);
-        catPlayers.forEach(p=>{
-            const div=document.createElement("div");
-            div.className="player-row";
-            div.innerHTML=`<img src="${p.skin}" alt="${p.name}">
-            <span class="player-name">${p.name}<span class="tooltip">${p.region} | ${p.tier}</span></span>
-            <div class="tier-box"><img src="https://mctiers.com/tier_icons/nethop.svg" alt="nethop"><span>${p.tier}</span></div>`;
-            cols[cat].appendChild(div);
-        });
-    });
-}
-
-function addPlayer(){
-    const key=prompt("Enter admin key:");
-    if(key!==secretKey){ alert("Unauthorized!"); return; }
-    const name=prompt("Player name?");
-    const tier=prompt("Tier (HT1, LT1, RHT1...)?");
-    const region=prompt("Region (AS, EU, ME, AU, NA)?").toUpperCase();
-    const type=prompt("Account type (premium/crack)?").toLowerCase();
-    if(!Object.keys(categoryMap).includes(tier)||!regionList.includes(region)||!["premium","crack"].includes(type)){ alert("Invalid input"); return; }
-    const skin=getHeadURL(name,type);
-    const idx=players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
-    if(idx!==-1) players[idx]={name,tier,region,type,skin};
-    else players.push({name,tier,region,type,skin});
-    savePlayers(); render();
-}
-
-function removePlayer(){
-    const key=prompt("Enter admin key:");
-    if(key!==secretKey){ alert("Unauthorized!"); return; }
-    const name=prompt("Player name to remove:");
-    const idx=players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
-    if(idx===-1){ alert("Player not found!"); return; }
-    players.splice(idx,1);
-    savePlayers(); render();
-}
-
-function searchPlayer(){
-    const name=document.getElementById("search-input").value.toLowerCase();
-    const p=players.find(pl=>pl.name.toLowerCase()===name);
-    const div=document.getElementById("search-result");
-    div.innerHTML="";
-    if(!p){ alert("Player not found"); return; }
-    const card=document.createElement("div");
-    card.className="result-player";
-    card.innerHTML=`<img src="${p.skin}" alt="${p.name}">
-        <span>${p.name}</span>
-        <div class="tier-box"><img src="https://mctiers.com/tier_icons/nethop.svg" alt="nethop"><span>${p.tier}</span></div>`;
-    div.appendChild(card);
-}
+/* initial paint */
+renderBoard();
 </script>
 </body>
 </html>
