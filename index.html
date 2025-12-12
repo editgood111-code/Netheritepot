@@ -37,7 +37,8 @@
   .player-row .tierbox{position:absolute;right:-100%;top:0;height:100%;width:50%;background:rgba(0,0,0,0.75);display:flex;justify-content:center;align-items:center;font-weight:700;color:#fff;font-size:14px;border-radius:0 6px 6px 0;transition:right 0.28s ease;pointer-events:none;overflow:hidden;}
   .player-row:hover .player-name{transform:translateX(-50%);}
   .player-row:hover .tierbox{right:0;}
-  .left-border{width:4px;height:100%;position:absolute;left:0;top:0;border-radius:6px 0 0 6px;}
+  /* removed left-border color */
+  .left-border{display:none;}
 
   .controls{margin-top:10px;display:flex;justify-content:center;gap:10px;}
   .controls button{padding:8px 12px;border-radius:6px;border:none;background:#238636;color:white;cursor:pointer;}
@@ -54,7 +55,7 @@
 <h1>Netheritepot Tierlist</h1>
 
 <div class="search-wrap">
-  <input id="search-input" placeholder="Search player... (IGN or alias)">
+  <input id="search-input" placeholder="Search player...">
   <button onclick="searchPlayer()">Search</button>
 </div>
 <div id="search-result"></div>
@@ -105,7 +106,6 @@ playersRef.once("value", snapshot=>{
   const data = snapshot.val();
   if(data){ players = Array.isArray(data)?data:Object.values(data); }
   else{
-    // default
     players=[
       {name:"Swight",tier:"HT1",region:"EU",type:"premium",skin:getHeadURL("Swight","premium"),aliases:[]},
       {name:"Marlowww",tier:"LT2",region:"NA",type:"premium",skin:getHeadURL("Marlowww","premium"),aliases:[]},
@@ -136,17 +136,6 @@ function renderLeaderboard(){
   container.innerHTML="";
   const cols={};
 
-  const regionColor = r=>{
-    switch(r){
-      case "AS": return "#6f9bff";
-      case "EU": return "#8a2be2";
-      case "NA": return "#ffb86b";
-      case "ME": return "#f66";
-      case "AU": return "#2eea9e";
-      default: return "#888";
-    }
-  };
-
   categories.forEach(cat=>{
     const col=document.createElement("div");
     col.className="tier-column";
@@ -171,13 +160,10 @@ function renderLeaderboard(){
 
     catPlayers.forEach(p=>{
       const row=document.createElement("div"); row.className="player-row";
-
-      const lb=document.createElement("div"); lb.className="left-border"; lb.style.background=regionColor(p.region); row.appendChild(lb);
       const head=document.createElement("img"); head.className="head"; head.src=p.skin; head.alt=p.name; row.appendChild(head);
       const nameWrap=document.createElement("div"); nameWrap.className="name-wrap"; const nameSpan=document.createElement("div"); nameSpan.className="player-name"; nameSpan.textContent=p.name; nameWrap.appendChild(nameSpan); row.appendChild(nameWrap);
       const tierBox=document.createElement("div"); tierBox.className="tierbox"; tierBox.textContent=`${p.region} | ${p.tier}`; row.appendChild(tierBox);
-
-      cols[cat].appendChild(row);
+      container.querySelector(`.tier-column:nth-child(${categories.indexOf(cat)+1}) .rows`).appendChild(row);
     });
   });
 }
