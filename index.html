@@ -22,7 +22,6 @@
   .mini-card .name{font-weight:700;font-size:16px;}
   .mini-card .tier-box{display:flex;align-items:center;gap:8px;background:#212526;padding:6px 10px;border-radius:8px;font-weight:700;}
   .mini-card .tier-box img{width:22px;height:22px;}
-  .mini-card .alias-note{font-size:12px;color:#ffd;border-radius:4px;margin-top:4px;}
   .mini-card .namemc{color:#6f9bff;text-decoration:none;font-size:13px;}
 
   /* Leaderboard */
@@ -94,16 +93,9 @@ const playersRef=db.ref("players");
 
 let players=[];
 
-/*  
-=======================================================
-PATCH #1 — UPDATED getHeadURL()
-=======================================================
-*/
+/* FINAL SKIN FIX — ONLY CHANGE REQUESTED */
 function getHeadURL(name,type="premium",size=32){
-  if(type==="premium"){
-    return `https://mc-heads.net/avatar/${encodeURIComponent(name)}?size=${size}&nocache=${Date.now()}`;
-  }
-  return `https://mc-heads.net/avatar/Steve/${size}`;
+  return `https://mc-heads.net/avatar/${encodeURIComponent(name)}?size=${size}&default=MHF_Steve&nocache=${Date.now()}`;
 }
 
 playersRef.once("value",snapshot=>{
@@ -121,7 +113,7 @@ function findPlayerByNameOrAlias(q){
   for(const p of players){
     if(n(p.name)===s) return {player:p,type:"name"};
     if(Array.isArray(p.aliases)&&p.aliases.some(a=>n(a)===s))
-      return {player:p,type:"alias",alias:q};
+      return {player:p,type:"alias"};
   }
   return null;
 }
@@ -155,18 +147,6 @@ function renderLeaderboard(){
     const sortedPlayers=[...htPlayers,...ltPlayers,...retiredPlayers];
 
     sortedPlayers.forEach(p=>{
-
-      /*  
-      =======================================================
-      PATCH #2 — AUTO-REFRESH PREMIUM SKIN
-      =======================================================
-      */
-      if(p.type==="premium"){
-        const freshSkin=getHeadURL(p.name,"premium",32);
-        if(p.skin!==freshSkin){
-          p.skin=freshSkin;
-        }
-      }
 
       const row=document.createElement("div");
       row.className="player-row";
@@ -215,10 +195,6 @@ async function searchPlayer(){
       ? `<div><a class="namemc" href="https://namemc.com/profile/${encodeURIComponent(p.name)}" target="_blank">NameMC</a></div>`
       : "";
 
-    const aliasNote=(found.type==="alias")
-      ? `<div class="alias-note">Searched old name. Current: ${p.name}</div>`
-      : "";
-
     card.innerHTML=`
       <img class="skin" src="${p.skin}" alt="${p.name}">
       <div class="region">${p.region}</div>
@@ -228,7 +204,6 @@ async function searchPlayer(){
         <img src="https://mctiers.com/tier_icons/nethop.svg" alt="helmet">
         <div class="tier-text">${p.tier}</div>
       </div>
-      ${aliasNote}
     `;
 
     resultDiv.appendChild(card);
@@ -261,7 +236,7 @@ function addPlayerPreFill(ign){
     tier,
     region,
     type,
-    skin:type==="premium"?getHeadURL(ign,"premium",32):getHeadURL("Steve","crack",32)
+    skin:getHeadURL(ign,"premium",32)
   };
 
   players.push(newPlayer);
@@ -298,7 +273,7 @@ async function addPlayer(){
     p.tier=newTier;
     p.region=newRegion.toUpperCase();
     p.type=newType.toLowerCase();
-    p.skin=p.type==="premium"?getHeadURL(p.name,"premium",32):getHeadURL("Steve","crack",32);
+    p.skin=getHeadURL(p.name,"premium",32);
 
     savePlayers();
     renderLeaderboard();
@@ -316,7 +291,7 @@ async function addPlayer(){
     tier,
     region,
     type,
-    skin:type==="premium"?getHeadURL(inputName,"premium",32):getHeadURL("Steve","crack",32)
+    skin:getHeadURL(inputName,"premium",32)
   };
 
   players.push(newPlayer);
@@ -329,7 +304,7 @@ function removePlayer(){
   const key=prompt("Enter admin key:");
   if(key!==secretKey) return alert("Unauthorized");
 
-  const name=prompt("Enter IGN:");
+  const name=prompt("Enter IGN or alias:");
   if(!name) return;
 
   const before=players.length;
