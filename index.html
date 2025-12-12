@@ -22,10 +22,11 @@ h1 { color:#ffcc00; margin-bottom:20px; }
 .tier-column { flex:1; min-width:160px; padding:6px; border-radius:8px; }
 .tier-column h2 { text-align:center; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:5px; margin-bottom:5px; }
 
-.player-row { position:relative; padding:6px; border-radius:8px; margin-bottom:4px; display:flex; align-items:center; gap:6px; overflow:hidden; background:#0f1318; cursor:pointer; }
+.player-row { position:relative; border-radius:8px; margin-bottom:6px; background:#0f1318; overflow:hidden; cursor:pointer; height:32px; display:flex; align-items:center; }
+.player-content { display:flex; align-items:center; gap:6px; padding:0 6px; transition: transform 0.28s ease; width:calc(100% - 50%); }
+.player-row:hover .player-content { transform: translateX(-50%); }
 .player-row img { width:28px; height:28px; border-radius:6px; border:1px solid #fff; flex-shrink:0; }
-.player-name { font-size:14px; font-weight:600; z-index:3; position:relative; white-space:nowrap; transition: transform 0.3s ease; overflow:hidden; text-overflow:ellipsis; max-width:calc(100% - 50px); }
-.player-row:hover .player-name { transform: translateX(-50%); }
+.player-name { font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 .slide-tier {
   position:absolute;
@@ -41,12 +42,10 @@ h1 { color:#ffcc00; margin-bottom:20px; }
   font-size:14px;
   font-weight:bold;
   pointer-events:none;
-  z-index:2;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
   transform: translateX(100%);
   transition: transform 0.28s ease;
+  overflow:hidden;
+  white-space:nowrap;
 }
 .player-row:hover .slide-tier { transform: translateX(0); }
 
@@ -81,7 +80,7 @@ let players=[];
 function getHeadURL(name,type){return type==="premium"?`https://mc-heads.net/avatar/${name}/32`:"https://mc-heads.net/avatar/Steve/32";}
 playersRef.once("value",snap=>{const d=snap.val();if(d)players=d;else{players=[{name:"Swight",tier:"HT1",region:"EU",type:"premium",skin:getHeadURL("Swight","premium")},{name:"Marlowww",tier:"LT2",region:"NA",type:"premium",skin:getHeadURL("Marlowww","premium")},{name:"ItzRealMe",tier:"HT3",region:"AS",type:"premium",skin:getHeadURL("ItzRealMe","premium")}];playersRef.set(players);}render();});
 function savePlayers(){playersRef.set(players);}
-function render(){const box=document.getElementById("leaderboard-container");box.innerHTML="";const cols={};categories.forEach(c=>{const col=document.createElement("div");col.className="tier-column";col.innerHTML=`<h2>${c}</h2>`;box.appendChild(col);cols[c]=col;});const maxRows=Math.max(...categories.map(c=>players.filter(p=>categoryMap[p.tier]===c).length));for(let i=0;i<maxRows;i++){categories.forEach(cat=>{const list=players.filter(p=>categoryMap[p.tier]===cat).sort((a,b)=>{const o=["HT","RHT","LT","RLT"];return o.indexOf(a.tier.slice(0,2))-o.indexOf(b.tier.slice(0,2));});if(list[i]){const p=list[i];const row=document.createElement("div");row.className="player-row";row.innerHTML=`<img src="${p.skin}"><span class="player-name" title="${p.name}">${p.name}</span><div class="slide-tier">${p.region} | ${p.tier}</div>`;cols[cat].appendChild(row);}});}}
+function render(){const box=document.getElementById("leaderboard-container");box.innerHTML="";const cols={};categories.forEach(c=>{const col=document.createElement("div");col.className="tier-column";col.innerHTML=`<h2>${c}</h2>`;box.appendChild(col);cols[c]=col;});const maxRows=Math.max(...categories.map(c=>players.filter(p=>categoryMap[p.tier]===c).length));for(let i=0;i<maxRows;i++){categories.forEach(cat=>{const list=players.filter(p=>categoryMap[p.tier]===cat).sort((a,b)=>{const o=["HT","RHT","LT","RLT"];return o.indexOf(a.tier.slice(0,2))-o.indexOf(b.tier.slice(0,2));});if(list[i]){const p=list[i];const row=document.createElement("div");row.className="player-row";row.innerHTML=`<div class='player-content'><img src='${p.skin}'><span class='player-name'>${p.name}</span></div><div class='slide-tier'>${p.region} | ${p.tier}</div>`;cols[cat].appendChild(row);}});}}
 function addPlayer(){const key=prompt("Enter admin key:");if(key!==secretKey)return alert("Unauthorized");const name=prompt("Player name?");const tier=prompt("Tier?");const region=prompt("Region?");const type=prompt("premium/crack?");if(!Object.keys(categoryMap).includes(tier)||!regionList.includes(region.toUpperCase()))return alert("Invalid");const skin=getHeadURL(name,type);const ex=players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());if(ex!==-1){players[ex]={name,tier,region:region.toUpperCase(),type,skin};}else players.push({name,tier,region:region.toUpperCase(),type,skin});savePlayers();render();}
 function removePlayer(){const key=prompt("Enter admin key:");if(key!==secretKey)return alert("Unauthorized");const name=prompt("Player name?");const i=players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());if(i===-1)return alert("Not found");players.splice(i,1);savePlayers();render();}
 function searchPlayer(){const name=document.getElementById("search-input").value.toLowerCase();const p=players.find(a=>a.name.toLowerCase()===name);const box=document.getElementById("search-result");box.innerHTML="";if(!p)return alert("Not found");box.innerHTML=`<div class='result-player'><img src='${p.skin}'><strong>${p.name}</strong><div class='tier-box'>${p.region} | ${p.tier}</div></div>`;}
