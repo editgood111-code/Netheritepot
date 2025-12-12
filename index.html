@@ -7,14 +7,10 @@
 <style>
   body { font-family: Arial,sans-serif; background:#0d1117; color:#c9d1d9; text-align:center; padding:20px; }
   h1 { color:#ffcc00; margin-bottom:20px; }
-
-  /* Search */
   .search-wrap{display:flex;justify-content:center;gap:8px;margin-bottom:16px;}
   .search-wrap input{width:240px;padding:8px;border-radius:6px;border:1px solid #30363d;background:#161b22;color:#c9d1d9;}
   .search-wrap button{padding:8px 12px;border-radius:6px;border:none;background:#238636;color:white;cursor:pointer;}
   .search-wrap button:hover{background:#2ea043;}
-
-  /* Search result */
   #search-result{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
   .mini-card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:10px;width:240px;display:flex;flex-direction:column;align-items:center;gap:8px;}
   .mini-card img.skin{width:64px;height:64px;border-radius:8px;border:2px solid #fff;object-fit:cover;}
@@ -23,8 +19,6 @@
   .mini-card .tier-box{display:flex;align-items:center;gap:8px;background:#212526;padding:6px 10px;border-radius:8px;font-weight:700;}
   .mini-card .tier-box img{width:22px;height:22px;}
   .mini-card .namemc{color:#6f9bff;text-decoration:none;font-size:13px;}
-
-  /* Leaderboard */
   .leaderboard{display:flex;gap:10px;max-width:1200px;margin:0 auto;overflow-x:auto;padding-bottom:20px;}
   .tier-column{flex:1;min-width:180px;background:#161b22;border-radius:10px;padding:8px;}
   .tier-column h2{text-align:center;color:#58a6ff;border-bottom:1px solid #30363d;padding-bottom:6px;margin-bottom:8px;}
@@ -36,14 +30,11 @@
   .player-row .tierbox{position:absolute;right:-100%;top:0;height:100%;width:50%;background:rgba(0,0,0,0.75);display:flex;justify-content:center;align-items:center;font-weight:700;color:#fff;font-size:14px;border-radius:0 6px 6px 0;transition:right 0.28s ease;pointer-events:none;overflow:hidden;}
   .player-row:hover .player-name{transform:translateX(-50%);}
   .player-row:hover .tierbox{right:0;}
-  .left-border{display:none;}
-
   .controls{margin-top:10px;display:flex;justify-content:center;gap:10px;}
   .controls button{padding:8px 12px;border-radius:6px;border:none;background:#238636;color:white;cursor:pointer;}
   .controls button:hover{background:#2ea043;}
   .small{font-size:12px;color:#9aa;margin-top:8px;}
 </style>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
@@ -66,35 +57,19 @@
 
 <script>
 const secretKey="aceppp1122";
-
-const firebaseConfig={
-  apiKey:"AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
-  authDomain:"tierlist-3305a.firebaseapp.com",
-  databaseURL:"https://tierlist-3305a-default-rtdb.firebaseio.com",
-  projectId:"tierlist-3305a",
-  storageBucket:"tierlist-3305a.firebasestorage.app",
-  messagingSenderId:"410709885310",
-  appId:"1:410709885310:web:ceab1ca94e0f45513f332f"
-};
-
-const regionList=["AS","EU","ME","AU","NA"];
-const categories=["T1","T2","T3","T4","T5"];
-const categoryMap={
-  "HT1":"T1","LT1":"T1","RHT1":"T1","RLT1":"T1",
-  "HT2":"T2","LT2":"T2","RHT2":"T2","RLT2":"T2",
-  "HT3":"T3","LT3":"T3","RHT3":"T3","RLT3":"T3",
-  "HT4":"T4","LT4":"T4",
-  "HT5":"T5","LT5":"T5"
-};
-
+const firebaseConfig={apiKey:"AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",authDomain:"tierlist-3305a.firebaseapp.com",databaseURL:"https://tierlist-3305a-default-rtdb.firebaseio.com",projectId:"tierlist-3305a",storageBucket:"tierlist-3305a.firebasestorage.app",messagingSenderId:"410709885310",appId:"1:410709885310:web:ceab1ca94e0f45513f332f"};
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 const playersRef=db.ref("players");
 let players=[];
 
-/* FIXED PREMIUM SKIN FUNCTION */
-function getHeadURL(name,size=32){
-  return `https://mc-heads.net/avatar/${encodeURIComponent(name)}?size=${size}&default=MHF_Steve&nocache=${Date.now()}`;
+const categories=["T1","T2","T3","T4","T5"];
+const categoryMap={"HT1":"T1","LT1":"T1","RHT1":"T1","RLT1":"T1","HT2":"T2","LT2":"T2","RHT2":"T2","RLT2":"T2","HT3":"T3","LT3":"T3","RHT3":"T3","RLT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5"};
+
+function n(s){ return (s||"").toLowerCase().trim(); }
+
+function getPremiumSkin(name){ 
+  return `https://mc-heads.net/avatar/${encodeURIComponent(name)}?size=32&nocache=${Date.now()}`;
 }
 
 playersRef.once("value",snapshot=>{
@@ -105,19 +80,16 @@ playersRef.once("value",snapshot=>{
 });
 
 function savePlayers(){ playersRef.set(players); }
-function n(s){ return (s||"").toLowerCase().trim(); }
 
 function findPlayerByNameOrAlias(q){
   const s=n(q);
   for(const p of players){
     if(n(p.name)===s) return {player:p,type:"name"};
-    if(Array.isArray(p.aliases)&&p.aliases.some(a=>n(a)===s))
-      return {player:p,type:"alias"};
+    if(Array.isArray(p.aliases)&&p.aliases.some(a=>n(a)===s)) return {player:p,type:"alias"};
   }
   return null;
 }
 
-/* ================== RENDER ================== */
 function renderLeaderboard(){
   const container=document.getElementById("leaderboard-container");
   container.innerHTML="";
@@ -125,14 +97,9 @@ function renderLeaderboard(){
   categories.forEach(cat=>{
     const col=document.createElement("div");
     col.className="tier-column";
-    const h2=document.createElement("h2");
-    h2.textContent=cat;
-    col.appendChild(h2);
-    const rows=document.createElement("div");
-    rows.className="rows";
-    col.appendChild(rows);
-    container.appendChild(col);
-    cols[cat]=rows;
+    const h2=document.createElement("h2"); h2.textContent=cat; col.appendChild(h2);
+    const rows=document.createElement("div"); rows.className="rows"; col.appendChild(rows);
+    container.appendChild(col); cols[cat]=rows;
   });
 
   categories.forEach(cat=>{
@@ -143,68 +110,37 @@ function renderLeaderboard(){
     const sortedPlayers=[...htPlayers,...ltPlayers,...retiredPlayers];
 
     sortedPlayers.forEach(p=>{
-      if(p.type==="premium") p.skin=getHeadURL(p.name,32); // FIXED SKIN
-      else p.skin=getHeadURL("Steve",32);
+      if(p.type==="premium") p.skin=getPremiumSkin(p.name);
+      else p.skin=getPremiumSkin("Steve");
 
-      const row=document.createElement("div");
-      row.className="player-row";
-      const head=document.createElement("img");
-      head.className="head";
-      head.src=p.skin;
-      head.alt=p.name;
-      row.appendChild(head);
-
-      const nameWrap=document.createElement("div");
-      nameWrap.className="name-wrap";
-      const nameSpan=document.createElement("div");
-      nameSpan.className="player-name";
-      nameSpan.textContent=p.name;
-      nameWrap.appendChild(nameSpan);
-      row.appendChild(nameWrap);
-
-      const tierBox=document.createElement("div");
-      tierBox.className="tierbox";
-      tierBox.textContent=`${p.region} | ${p.tier}`;
-      row.appendChild(tierBox);
-
+      const row=document.createElement("div"); row.className="player-row";
+      const head=document.createElement("img"); head.className="head"; head.src=p.skin; head.alt=p.name; row.appendChild(head);
+      const nameWrap=document.createElement("div"); nameWrap.className="name-wrap";
+      const nameSpan=document.createElement("div"); nameSpan.className="player-name"; nameSpan.textContent=p.name;
+      nameWrap.appendChild(nameSpan); row.appendChild(nameWrap);
+      const tierBox=document.createElement("div"); tierBox.className="tierbox"; tierBox.textContent=`${p.region} | ${p.tier}`; row.appendChild(tierBox);
       cols[cat].appendChild(row);
     });
   });
 }
 
-/* ================== SEARCH ================== */
 async function searchPlayer(){
   const q=document.getElementById("search-input").value.trim();
   if(!q) return alert("Type a player name first.");
-  const resultDiv=document.getElementById("search-result");
-  resultDiv.innerHTML="";
+  const resultDiv=document.getElementById("search-result"); resultDiv.innerHTML="";
   const found=findPlayerByNameOrAlias(q);
   if(found){
     const p=found.player;
-    if(p.type==="premium") p.skin=getHeadURL(p.name,32);
-    const card=document.createElement("div");
-    card.className="mini-card";
-    const nameMClink=(p.type==="premium") ? `<div><a class="namemc" href="https://namemc.com/profile/${encodeURIComponent(p.name)}" target="_blank">NameMC</a></div>` : "";
-    card.innerHTML=`
-      <img class="skin" src="${p.skin}" alt="${p.name}">
-      <div class="region">${p.region}</div>
-      <div class="name">${p.name}</div>
-      ${nameMClink}
-      <div class="tier-box">
-        <img src="https://mctiers.com/tier_icons/nethop.svg" alt="helmet">
-        <div class="tier-text">${p.tier}</div>
-      </div>
-    `;
-    resultDiv.appendChild(card);
-    return;
+    if(p.type==="premium") p.skin=getPremiumSkin(p.name);
+    const card=document.createElement("div"); card.className="mini-card";
+    const nameMClink=(p.type==="premium")? `<div><a class="namemc" href="https://namemc.com/profile/${encodeURIComponent(p.name)}" target="_blank">NameMC</a></div>` : "";
+    card.innerHTML=`<img class="skin" src="${p.skin}" alt="${p.name}"><div class="region">${p.region}</div><div class="name">${p.name}</div>${nameMClink}<div class="tier-box"><img src="https://mctiers.com/tier_icons/nethop.svg" alt="helmet"><div class="tier-text">${p.tier}</div></div>`;
+    resultDiv.appendChild(card); return;
   }
-
   try{
     const res=await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(q)}`);
-    if(res.status===200){
-      if(confirm(`"${q}" is valid but not on leaderboard. Add now?`)) addPlayerPreFill(q);
-      else alert("Not added.");
-    } else alert(`"${q}" not found.`);
+    if(res.status===200){ if(confirm(`"${q}" is valid but not on leaderboard. Add now?`)) addPlayerPreFill(q); else alert("Not added."); }
+    else alert(`"${q}" not found.`);
   }catch(e){ alert("Could not reach Mojang API."); }
 }
 
@@ -212,82 +148,42 @@ async function addPlayerPreFill(ign){
   if(!ign) return;
   let apiData=null;
   try{ const r=await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(ign)}`); if(r.ok) apiData=await r.json(); }catch(e){ apiData=null; }
-
   let finalName=ign;
   if(apiData && apiData.name && apiData.name.toLowerCase()!==ign.toLowerCase()){
     if(!confirm(`Warning: Premium player changed username.\nOld: ${ign}\nNew: ${apiData.name}\nProceed with NEW name?`)) return;
     finalName=apiData.name;
   }
-
   const tier=prompt("Tier (HT1..):","HT1")||"HT1";
   const region=prompt("Region:","NA").toUpperCase();
   const type=prompt("Account type:","premium").toLowerCase();
-  const newPlayer={name:finalName,aliases:[],tier,region,type,skin:getHeadURL(finalName,32)};
-  players.push(newPlayer);
-  savePlayers();
-  renderLeaderboard();
-  alert("Added.");
+  const newPlayer={name:finalName,aliases:[],tier,region,type,skin:getPremiumSkin(finalName)};
+  players.push(newPlayer); savePlayers(); renderLeaderboard(); alert("Added.");
 }
 
 async function addPlayer(){
-  const key=prompt("Enter admin key:");
-  if(key!==secretKey) return alert("Unauthorized");
-  let inputName=prompt("Enter IGN or alias:");
-  if(!inputName) return;
-  inputName=inputName.trim();
+  const key=prompt("Enter admin key:"); if(key!==secretKey) return alert("Unauthorized");
+  let inputName=prompt("Enter IGN or alias:"); if(!inputName) return; inputName=inputName.trim();
   const existing=findPlayerByNameOrAlias(inputName);
   if(existing){
     const p=existing.player;
     const newTier=prompt("Tier:",p.tier)||p.tier;
     const newRegion=prompt("Region:",p.region)||p.region;
     const newType=prompt("Account type:",p.type)||p.type;
-
-    if(confirm("Rename player?")){
-      const newName=prompt("New IGN:",p.name);
-      if(newName){ p.name=newName.trim(); }
-    }
-
-    p.tier=newTier;
-    p.region=newRegion.toUpperCase();
-    p.type=newType.toLowerCase();
-    if(p.type==="premium") p.skin=getHeadURL(p.name,32); else p.skin=getHeadURL("Steve",32);
-
-    savePlayers();
-    renderLeaderboard();
-    alert("Player updated.");
-    return;
+    if(confirm("Rename player?")){ const newName=prompt("New IGN:",p.name); if(newName) p.name=newName.trim(); }
+    p.tier=newTier; p.region=newRegion.toUpperCase(); p.type=newType.toLowerCase();
+    p.skin=(p.type==="premium")? getPremiumSkin(p.name) : getPremiumSkin("Steve");
+    savePlayers(); renderLeaderboard(); alert("Player updated."); return;
   }
-
-  let apiData=null;
-  try{ const r=await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(inputName)}`); if(r.ok) apiData=await r.json(); }catch(e){ apiData=null; }
-
-  let finalName=inputName;
-  if(apiData && apiData.name && apiData.name.toLowerCase()!==inputName.toLowerCase()){
-    if(!confirm(`Warning: Premium player changed username.\nOld: ${inputName}\nNew: ${apiData.name}\nProceed with NEW name?`)) return;
-    finalName=apiData.name;
-  }
-
-  const tier=prompt("Tier:","HT1")||"HT1";
-  const region=prompt("Region:","NA").toUpperCase();
-  const type=prompt("Account type:","premium").toLowerCase();
-  const newPlayer={name:finalName,aliases:[],tier,region,type,skin:getHeadURL(finalName,32)};
-  players.push(newPlayer);
-  savePlayers();
-  renderLeaderboard();
-  alert("Added.");
+  addPlayerPreFill(inputName);
 }
 
 function removePlayer(){
-  const key=prompt("Enter admin key:");
-  if(key!==secretKey) return alert("Unauthorized");
-  const name=prompt("Enter IGN or alias:");
-  if(!name) return;
+  const key=prompt("Enter admin key:"); if(key!==secretKey) return alert("Unauthorized");
+  const name=prompt("Enter IGN or alias:"); if(!name) return;
   const before=players.length;
   players=players.filter(p=>n(p.name)!==n(name) && !(Array.isArray(p.aliases)&&p.aliases.map(a=>n(a)).includes(n(name))));
   if(players.length===before) return alert("Player not found.");
-  savePlayers();
-  renderLeaderboard();
-  alert("Removed.");
+  savePlayers(); renderLeaderboard(); alert("Removed.");
 }
 </script>
 </body>
