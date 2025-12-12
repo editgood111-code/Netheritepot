@@ -1,99 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MC-Tier Style Final</title>
-  <style>
-    body {
-      background: #0d0d0d;
-      font-family: Arial, sans-serif;
-      color: white;
-      margin: 0;
-      padding: 40px;
-      display: flex;
-      justify-content: center;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netheritepot Tierlist — MC‑Tier Style Final</title>
+<style>
+body { font-family: Arial, sans-serif; background:#0d1117; color:#c9d1d9; text-align:center; padding:20px; }
+h1 { color:#ffcc00; margin-bottom:25px; }
 
-    .tierlist {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      width: 900px;
-    }
+/* SEARCH */
+.search-container { margin-bottom:25px; }
+.search-container input { padding:7px 14px; border-radius:6px; border:none; width:220px; }
+.search-container button { padding:7px 14px; margin-left:5px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; }
+.search-container button:hover { background:#2ea043; }
 
-    .player {
-      width: 180px;
-      height: 220px;
-      background: #1a1a1a;
-      border-radius: 14px;
-      overflow: hidden;
-      position: relative;
-      transition: transform 0.25s ease;
-    }
+#search-result { margin-bottom:25px; display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; }
+.result-player { background:#161b22; padding:12px; border-radius:10px; display:flex; align-items:center; gap:12px; }
+.result-player img { width:45px; height:45px; border-radius:50%; border:1px solid #fff; }
+.tier-box { background:#238636; padding:3px 8px; border-radius:6px; display:flex; align-items:center; gap:6px; font-size:15px; }
 
-    .player:hover {
-      transform: scale(1.06);
-    }
+/* LEADERBOARD */
+.leaderboard { display:flex; justify-content:space-between; max-width:1250px; margin:0 auto; gap:12px; overflow-x:auto; }
+.tier-column { flex:1; min-width:190px; background:#161b22; padding:10px; border-radius:10px; }
+.tier-column h2 { text-align:center; color:#58a6ff; border-bottom:1px solid #30363d; padding-bottom:6px; margin-bottom:8px; }
 
-    .pfp {
-      width: 100%;
-      height: 140px;
-      background-size: cover;
-      background-position: center;
-    }
+/* PLAYER ROW — MC-TIER SLIDE STYLE */
+.player-row { position:relative; background:#0f1318; padding:8px; border-radius:10px; margin-bottom:6px; display:flex; align-items:center; gap:8px; overflow:hidden; }
+.player-row img { width:28px; height:28px; border-radius:6px; border:1px solid #fff; }
+.player-name { font-size:15px; font-weight:600; z-index:3; position:relative; }
 
-    .name {
-      text-align: center;
-      padding: 10px 0;
-      font-size: 18px;
-      font-weight: bold;
-    }
+/* SLIDE PANEL */
+.slide-tier {
+  position:absolute;
+  top:0;
+  right:-55%;
+  width:55%;
+  height:100%;
+  background:rgba(0,0,0,0.80);
+  backdrop-filter:blur(5px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:15px;
+  font-weight:bold;
+  transition:right 0.28s ease;
+  border-left:2px solid #238636;
+  z-index:2;
+}
+.player-row:hover .slide-tier { right:0; }
 
-    /* SLIDE TIER */
-    .tierbox {
-      position: absolute;
-      top: 0;
-      right: -100%;
-      width: 50%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.78);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      font-weight: bold;
-      transition: right 0.28s ease;
-      pointer-events: none;
-    }
+/* ADMIN BUTTONS */
+button { padding:7px 14px; margin-top:15px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer; transition:0.3s; }
+button:hover { background:#2ea043; }
+</style>
 
-    .player:hover .tierbox {
-      right: 0;
-    }
-  </style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-  <div class="tierlist">
+<h1>Netheritepot Tierlist</h1>
 
-    <div class="player">
-      <div class="pfp" style="background-image:url('https://i.imgur.com/0Z3ZQyY.png');"></div>
-      <div class="name">Player 1</div>
-      <div class="tierbox">EU | HT3</div>
-    </div>
+<div class="search-container">
+  <input type="text" id="search-input" placeholder="Search player...">
+  <button onclick="searchPlayer()">Search</button>
+</div>
 
-    <div class="player">
-      <div class="pfp" style="background-image:url('https://i.imgur.com/0Z3ZQyY.png');"></div>
-      <div class="name">Player 2</div>
-      <div class="tierbox">AS | LT1</div>
-    </div>
+<div id="search-result"></div>
 
-    <div class="player">
-      <div class="pfp" style="background-image:url('https://i.imgur.com/0Z3ZQyY.png');"></div>
-      <div class="name">Player 3</div>
-      <div class="tierbox">NA | R2</div>
-    </div>
+<div class="leaderboard" id="leaderboard-container"></div>
 
-  </div>
+<div style="margin-top:25px;">
+  <button onclick="addPlayer()">Add Player</button>
+  <button onclick="removePlayer()">Remove Player</button>
+</div>
+
+<script>
+const secretKey = "aceppp1122";
+const categoryMap = {"HT1":"T1","LT1":"T1","HT2":"T2","LT2":"T2","HT3":"T3","LT3":"T3","HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5","RHT1":"T1","RLT1":"T1","RHT2":"T2","RLT2":"T2","RHT3":"T3","RLT3":"T3"};
+const categories = ["T1","T2","T3","T4","T5"];
+const regionList = ["AS","EU","ME","AU","NA"];
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
+  authDomain: "tierlist-3305a.firebaseapp.com",
+  databaseURL: "https://tierlist-3305a-default-rtdb.firebaseio.com",
+  projectId: "tierlist-3305a",
+  storageBucket: "tierlist-3305a.firebasestorage.app",
+  messagingSenderId: "410709885310",
+  appId: "1:410709885310:web:ceab1ca94e0f45513f332f"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const playersRef = db.ref("players");
+
+let players = [];
+function getHeadURL(name,type){ return type==="premium"?`https://mc-heads.net/avatar/${name}/32`:"https://mc-heads.net/avatar/Steve/32"; }
+
+playersRef.once("value", snap => {
+  const d = snap.val();
+  if(d) players = d;
+  else {
+    players = [
+      {name:"Swight", tier:"HT1", region:"EU", type:"premium", skin:getHeadURL("Swight","premium")},
+      {name:"Marlowww", tier:"LT2", region:"NA", type:"premium", skin:getHeadURL("Marlowww","premium")},
+      {name:"ItzRealMe", tier:"HT3", region:"AS", type:"premium", skin:getHeadURL("ItzRealMe","premium")}
+    ];
+    playersRef.set(players);
+  }
+  render();
+});
+
+function savePlayers(){ playersRef.set(players); }
+
+function render(){
+  const box = document.getElementById("leaderboard-container");
+  box.innerHTML = "";
+  const cols = {};
+  categories.forEach(c=>{
+    const col=document.createElement("div");
+    col.className="tier-column";
+    col.innerHTML=`<h2>${c}</h2>`;
+    box.appendChild(col);
+    cols[c]=col;
+  });
+
+  const maxRows = Math.max(...categories.map(c=>players.filter(p=>categoryMap[p.tier]===c).length));
+
+  for(let i=0;i<maxRows;i++){
+    categories.forEach(cat=>{
+      const list = players.filter(p=>categoryMap[p.tier]===cat)
+        .sort((a,b)=>{
+          const o=["HT","RHT","LT","RLT"]; return o.indexOf(a.tier.slice(0,2))-o.indexOf(b.tier.slice(0,2));
+        });
+      if(list[i]){
+        const p=list[i];
+        const row=document.createElement("div");
+        row.className="player-row";
+        row.innerHTML = `
+          <img src="${p.skin}">
+          <span class="player-name">${p.name}</span>
+          <div class="slide-tier">${p.region} | ${p.tier}</div>
+        `;
+        cols[cat].appendChild(row);
+      }
+    });
+  }
+}
+
+function addPlayer(){
+  const key = prompt("Enter admin key:");
+  if(key!==secretKey) return alert("Unauthorized");
+
+  const name = prompt("Player name?");
+  const tier = prompt("Tier?");
+  const region = prompt("Region?");
+  const type = prompt("premium/crack?");
+  if(!Object.keys(categoryMap).includes(tier) || !regionList.includes(region.toUpperCase())) return alert("Invalid");
+
+  const skin = getHeadURL(name,type);
+  const ex = players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
+  if(ex!==-1){ players[ex]={name,tier,region:region.toUpperCase(),type,skin}; }
+  else players.push({name,tier,region:region.toUpperCase(),type,skin});
+
+  savePlayers(); render();
+}
+
+function removePlayer(){
+  const key = prompt("Enter admin key:");
+  if(key!==secretKey) return alert("Unauthorized");
+
+  const name = prompt("Player name?");
+  const i = players.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
+  if(i===-1) return alert("Not found");
+
+  players.splice(i,1); savePlayers(); render();
+}
+
+function searchPlayer(){
+  const name=document.getElementById("search-input").value.toLowerCase();
+  const p=players.find(a=>a.name.toLowerCase()===name);
+  const box=document.getElementById("search-result"); box.innerHTML="";
+  if(!p) return alert("Not found");
+
+  box.innerHTML=`
+    <div class='result-player'>
+      <img src='${p.skin}'>
+      <strong>${p.name}</strong>
+      <div class='tier-box'>${p.region} | ${p.tier}</div>
+    </div>`;
+}
+</script>
 </body>
 </html>
