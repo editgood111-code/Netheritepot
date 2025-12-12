@@ -66,7 +66,6 @@
 
 <script>
 const secretKey="aceppp1122";
-
 const firebaseConfig={
   apiKey:"AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
   authDomain:"tierlist-3305a.firebaseapp.com",
@@ -76,8 +75,11 @@ const firebaseConfig={
   messagingSenderId:"410709885310",
   appId:"1:410709885310:web:ceab1ca94e0f45513f332f"
 };
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+const playersRef=db.ref("players");
+let players=[];
 
-const regionList=["AS","EU","ME","AU","NA"];
 const categories=["T1","T2","T3","T4","T5"];
 const categoryMap={
   "HT1":"T1","LT1":"T1","RHT1":"T1","RLT1":"T1",
@@ -87,13 +89,8 @@ const categoryMap={
   "HT5":"T5","LT5":"T5"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db=firebase.database();
-const playersRef=db.ref("players");
-let players=[];
-
-function getHeadURL(name,type="premium",size=32){
-  return `https://mc-heads.net/avatar/${encodeURIComponent(name)}?size=${size}&default=MHF_Steve&nocache=${Date.now()}`;
+function getHeadURL(name){ 
+  return `https://mc-heads.net/avatar/${encodeURIComponent(name)}?size=32&default=MHF_Steve&nocache=${Date.now()}`;
 }
 
 playersRef.once("value",snapshot=>{
@@ -116,7 +113,6 @@ function findPlayerByNameOrAlias(q){
   return null;
 }
 
-/* ================== RENDER ================== */
 function renderLeaderboard(){
   const container=document.getElementById("leaderboard-container");
   container.innerHTML="";
@@ -136,13 +132,10 @@ function renderLeaderboard(){
 
   categories.forEach(cat=>{
     const catPlayers=players.filter(p=>categoryMap[p.tier]===cat);
-    const htPlayers=catPlayers.filter(p=>p.tier.startsWith("HT"));
-    const ltPlayers=catPlayers.filter(p=>p.tier.startsWith("LT"));
-    const retiredPlayers=catPlayers.filter(p=>p.tier.startsWith("RHT")||p.tier.startsWith("RLT"));
-    const sortedPlayers=[...htPlayers,...ltPlayers,...retiredPlayers];
+    const sortedPlayers=catPlayers.sort((a,b)=>a.tier.localeCompare(b.tier));
 
     sortedPlayers.forEach(p=>{
-      if(p.type==="premium") p.skin=getHeadURL(p.name,"premium",32);
+      if(p.type==="premium") p.skin=getHeadURL(p.name); 
       const row=document.createElement("div");
       row.className="player-row";
       const head=document.createElement("img");
@@ -169,7 +162,6 @@ function renderLeaderboard(){
   });
 }
 
-/* ================== SEARCH ================== */
 async function searchPlayer(){
   const q=document.getElementById("search-input").value.trim();
   if(!q) return alert("Type a player name first.");
@@ -178,6 +170,7 @@ async function searchPlayer(){
   const found=findPlayerByNameOrAlias(q);
   if(found){
     const p=found.player;
+    if(p.type==="premium") p.skin=getHeadURL(p.name);
     const card=document.createElement("div");
     card.className="mini-card";
     const nameMClink=(p.type==="premium") ? `<div><a class="namemc" href="https://namemc.com/profile/${encodeURIComponent(p.name)}" target="_blank">NameMC</a></div>` : "";
@@ -194,43 +187,31 @@ async function searchPlayer(){
     resultDiv.appendChild(card);
     return;
   }
-
   try{
     const res=await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(q)}`);
     if(res.status===200){
       if(confirm(`"${q}" is valid but not on leaderboard. Add now?`)) addPlayerPreFill(q);
       else alert("Not added.");
-    } else {
-      alert(`"${q}" not found.`);
-    }
-  }catch(e){
-    alert("Could not reach Mojang API.");
-  }
+    } else alert(`"${q}" not found.`);
+  }catch(e){ alert("Could not reach Mojang API."); }
 }
 
 async function addPlayerPreFill(ign){
   if(!ign) return;
-  let apiData=null;
-  try{
-    const r=await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(ign)}`);
-    if(r.ok) apiData=await r.json();
-  }catch(e){ apiData=null; }
-
+  const r=await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(ign)}`);
   let finalName=ign;
-  if(apiData && apiData.name && apiData.name.toLowerCase()!==ign.toLowerCase()){
-    if(!confirm(`Warning: Premium player changed username.\nOld: ${ign}\nNew: ${apiData.name}\nProceed with NEW name?`)) return;
-    finalName=apiData.name;
+  if(r.ok){
+    const data=await r.json();
+    if(data.name.toLowerCase()!==ign.toLowerCase()) {
+      if(!confirm(`Warning: Premium player changed username.\nOld: ${ign}\nNew: ${data.name}\nProceed with NEW name?`)) return;
+      finalName=data.name;
+    }
   }
-
   const tier=prompt("Tier (HT1..):","HT1")||"HT1";
   const region=prompt("Region:","NA").toUpperCase();
   const type=prompt("Account type:","premium").toLowerCase();
-
-  const newPlayer={name:finalName,aliases:[],tier,region,type,skin:getHeadURL(finalName,"premium",32)};
-  players.push(newPlayer);
-  savePlayers();
-  renderLeaderboard();
-  alert("Added.");
+  players.push({name:finalName,aliases:[],tier,region,type,skin:getHeadURL(finalName)});
+  savePlayers(); renderLeaderboard(); alert("Added.");
 }
 
 async function addPlayer(){
@@ -242,52 +223,22 @@ async function addPlayer(){
   const existing=findPlayerByNameOrAlias(inputName);
   if(existing){
     const p=existing.player;
-    const newTier=prompt("Tier:",p.tier)||p.tier;
-    const newRegion=prompt("Region:",p.region)||p.region;
-    const newType=prompt("Account type:",p.type)||p.type;
-
-    if(confirm("Rename player?")){
-      const newName=prompt("New IGN:",p.name);
-      if(newName){
-        p.name=newName.trim();
-        if(newType==="premium") p.skin=getHeadURL(p.name,"premium",32);
-      }
-    }
-
-    p.tier=newTier;
-    p.region=newRegion.toUpperCase();
-    p.type=newType.toLowerCase();
-    if(p.type==="premium") p.skin=getHeadURL(p.name,"premium",32);
-    else p.skin=getHeadURL("Steve","crack",32);
-
-    savePlayers();
-    renderLeaderboard();
-    alert("Player updated.");
-    return;
+    p.tier=prompt("Tier:",p.tier)||p.tier;
+    p.region=(prompt("Region:",p.region)||p.region).toUpperCase();
+    p.type=(prompt("Account type:",p.type)||p.type).toLowerCase();
+    if(p.type==="premium") p.skin=getHeadURL(p.name);
+    else p.skin=getHeadURL("Steve");
+    savePlayers(); renderLeaderboard(); alert("Player updated."); return;
   }
-
-  // New player, check premium username
-  let apiData=null;
-  try{
-    const r=await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(inputName)}`);
-    if(r.ok) apiData=await r.json();
-  }catch(e){ apiData=null; }
-
+  // New player
+  const r=await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(inputName)}`);
   let finalName=inputName;
-  if(apiData && apiData.name && apiData.name.toLowerCase()!==inputName.toLowerCase()){
-    if(!confirm(`Warning: Premium player changed username.\nOld: ${inputName}\nNew: ${apiData.name}\nProceed with NEW name?`)) return;
-    finalName=apiData.name;
-  }
-
+  if(r.ok){ const data=await r.json(); if(data.name.toLowerCase()!==inputName.toLowerCase()){ if(!confirm(`Warning: Premium player changed username.\nOld: ${inputName}\nNew: ${data.name}\nProceed?`)) return; finalName=data.name; } }
   const tier=prompt("Tier:","HT1")||"HT1";
   const region=prompt("Region:","NA").toUpperCase();
   const type=prompt("Account type:","premium").toLowerCase();
-
-  const newPlayer={name:finalName,aliases:[],tier,region,type,skin:getHeadURL(finalName,"premium",32)};
-  players.push(newPlayer);
-  savePlayers();
-  renderLeaderboard();
-  alert("Added.");
+  players.push({name:finalName,aliases:[],tier,region,type,skin:getHeadURL(finalName)});
+  savePlayers(); renderLeaderboard(); alert("Added.");
 }
 
 function removePlayer(){
@@ -298,9 +249,7 @@ function removePlayer(){
   const before=players.length;
   players=players.filter(p=>n(p.name)!==n(name) && !(Array.isArray(p.aliases)&&p.aliases.map(a=>n(a)).includes(n(name))));
   if(players.length===before) return alert("Player not found.");
-  savePlayers();
-  renderLeaderboard();
-  alert("Removed.");
+  savePlayers(); renderLeaderboard(); alert("Removed.");
 }
 </script>
 </body>
