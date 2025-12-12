@@ -123,9 +123,7 @@ function renderLeaderboard(){
     const htPlayers=catPlayers.filter(p=>p.tier.startsWith("HT"));
     const ltPlayers=catPlayers.filter(p=>p.tier.startsWith("LT"));
     const retiredPlayers=catPlayers.filter(p=>p.tier.startsWith("RHT")||p.tier.startsWith("RLT"));
-    htPlayers.sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:"base"}));
-    ltPlayers.sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:"base"}));
-    retiredPlayers.sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:"base"}));
+    // no sorting inside subgroup to keep new players at end
     const sortedPlayers=[...htPlayers,...ltPlayers,...retiredPlayers];
 
     sortedPlayers.forEach(p=>{
