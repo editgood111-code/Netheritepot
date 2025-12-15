@@ -14,7 +14,7 @@
   .search-wrap button{padding:8px 12px;border-radius:6px;border:none;background:#238636;color:white;cursor:pointer;}
   .search-wrap button:hover{background:#2ea043;}
 
-  /* Search result & Editor */
+  /* Search result */
   #search-result{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
   .mini-card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:10px;width:240px;display:flex;flex-direction:column;align-items:center;gap:8px;}
   .mini-card img.skin{width:64px;height:64px;border-radius:8px;border:2px solid #fff;object-fit:cover;}
@@ -24,11 +24,6 @@
   .mini-card .tier-box img{width:22px;height:22px;}
   .mini-card .alias-note{font-size:12px;color:#ffd;border-radius:4px;margin-top:4px;}
   .mini-card .namemc{color:#6f9bff;text-decoration:none;font-size:13px;}
-  .mini-card label { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 14px; }
-  .mini-card input, .mini-card select {
-    width: 160px; padding: 6px; border-radius: 4px; border: 1px solid #30363d;
-    background: #0d1117; color: #c9d1d9; box-sizing: border-box;
-  }
 
   /* Leaderboard */
   .leaderboard{display:flex;gap:10px;max-width:1200px;margin:0 auto;overflow-x:auto;padding-bottom:20px;}
@@ -43,7 +38,7 @@
   .player-row .tierbox{position:absolute;right:-100%;top:0;height:100%;width:50%;background:rgba(0,0,0,0.75);display:flex;justify-content:center;align-items:center;font-weight:700;color:#fff;font-size:14px;border-radius:0 6px 6px 0;transition:right 0.28s ease;pointer-events:none;overflow:hidden;}
   .player-row:hover .player-name{transform:translateX(-50%);}
   .player-row:hover .tierbox{right:0;}
-  .left-border{display:none;}
+  .left-border{display:none;} /* removed color before head */
 
   .controls{margin-top:10px;display:flex;justify-content:center;gap:10px;}
   .controls button{padding:8px 12px;border-radius:6px;border:none;background:#238636;color:white;cursor:pointer;}
@@ -114,6 +109,7 @@ function renderLeaderboard(){
   container.innerHTML="";
   const cols={};
 
+  // Always create columns for all categories
   categories.forEach(cat=>{
     const col=document.createElement("div"); col.className="tier-column";
     const h2=document.createElement("h2"); h2.textContent=cat; col.appendChild(h2);
@@ -122,19 +118,37 @@ function renderLeaderboard(){
     cols[cat]=rows;
   });
 
+  // Add players in HT -> LT -> Retired order, insertion order preserved
   categories.forEach(cat=>{
     const catPlayers=players.filter(p=>categoryMap[p.tier]===cat);
-    const sortedPlayers=[...catPlayers.filter(p=>p.tier.startsWith("HT")),...catPlayers.filter(p=>p.tier.startsWith("LT")),...catPlayers.filter(p=>p.tier.startsWith("RHT")||p.tier.startsWith("RLT"))];
+    const htPlayers=catPlayers.filter(p=>p.tier.startsWith("HT"));
+    const ltPlayers=catPlayers.filter(p=>p.tier.startsWith("LT"));
+    const retiredPlayers=catPlayers.filter(p=>p.tier.startsWith("RHT")||p.tier.startsWith("RLT"));
+
+    const sortedPlayers=[...htPlayers,...ltPlayers,...retiredPlayers];
 
     sortedPlayers.forEach(p=>{
       const row=document.createElement("div"); row.className="player-row";
-      row.setAttribute('onclick', `displayPlayerEditor('${p.name}')`); // Make row clickable
+      row.setAttribute('onclick', `showPlayerCard('${p.name}')`); // <-- FIXED: Click shows player card
       const head=document.createElement("img"); head.className="head"; head.src=p.skin; head.alt=p.name; row.appendChild(head);
       const nameWrap=document.createElement("div"); nameWrap.className="name-wrap"; const nameSpan=document.createElement("div"); nameSpan.className="player-name"; nameSpan.textContent=p.name; nameWrap.appendChild(nameSpan); row.appendChild(nameWrap);
       const tierBox=document.createElement("div"); tierBox.className="tierbox"; tierBox.textContent=`${p.region} | ${p.tier}`; row.appendChild(tierBox);
       cols[cat].appendChild(row);
     });
   });
+}
+
+// NEW function to show player info card, just like search
+function showPlayerCard(playerName) {
+  const resultDiv=document.getElementById("search-result"); resultDiv.innerHTML="";
+  const found=findPlayerByNameOrAlias(playerName);
+  if (found) {
+    const p=found.player; const card=document.createElement("div"); card.className="mini-card";
+    const nameMClink=(p.type==="premium")?`<div><a class="namemc" href="https://namemc.com/profile/${encodeURIComponent(p.name)}" target="_blank">NameMC</a></div>`:"";
+    // Note: alias check is not needed here since we are clicking the player directly
+    card.innerHTML=`<img class="skin" src="${getHeadURL(p.name, p.type, 64)}" alt="${p.name}"><div class="region">${p.region}</div><div class="name">${p.name}</div>${nameMClink}<div class="tier-box"><img src="https://mctiers.com/tier_icons/nethop.svg" alt="helmet"><div class="tier-text">${p.tier}</div></div>`;
+    resultDiv.appendChild(card);
+  }
 }
 
 /* ================== SEARCH ================== */
@@ -147,7 +161,7 @@ async function searchPlayer(){
     const p=found.player; const card=document.createElement("div"); card.className="mini-card";
     const nameMClink=(p.type==="premium")?`<div><a class="namemc" href="https://namemc.com/profile/${encodeURIComponent(p.name)}" target="_blank">NameMC</a></div>`:"";
     const aliasNote=(found.type==="alias")?`<div class="alias-note">Searched old name. Current: ${p.name}</div>`:"";
-    card.innerHTML=`<img class="skin" src="${p.skin}" alt="${p.name}"><div class="region">${p.region}</div><div class="name">${p.name}</div>${nameMClink}<div class="tier-box"><img src="https://mctiers.com/tier_icons/nethop.svg" alt="helmet"><div class="tier-text">${p.tier}</div></div>${aliasNote}`;
+    card.innerHTML=`<img class="skin" src="${getHeadURL(p.name, p.type, 64)}" alt="${p.name}"><div class="region">${p.region}</div><div class="name">${p.name}</div>${nameMClink}<div class="tier-box"><img src="https://mctiers.com/tier_icons/nethop.svg" alt="helmet"><div class="tier-text">${p.tier}</div></div>${aliasNote}`;
     resultDiv.appendChild(card); return;
   }
   try{
@@ -165,7 +179,7 @@ function addPlayerPreFill(ign){
   players.push(newPlayer); savePlayers(); renderLeaderboard(); alert("Added.");
 }
 
-/* ================== ADMIN & EDITOR ================== */
+/* ================== ADMIN ================== */
 async function addPlayer(){
   const key=prompt("Enter admin key:"); if(key!==secretKey){ alert("Unauthorized"); return; }
   let inputName=prompt("Enter player IGN or alias:"); if(!inputName) return; inputName=inputName.trim();
@@ -173,21 +187,42 @@ async function addPlayer(){
   
   if(existing){
     const p=existing.player;
+    // --- FIXED: Name change check logic ---
     if(p.type==="premium"){
       try{
+        // The fetch API automatically follows redirects, so using an old name works.
         const res=await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(p.name)}`);
         if(res.ok){
           const data=await res.json();
           if(data&&data.name&&n(data.name)!==n(p.name)){
-            alert(`Username Change Detected!\n\nOld Name: ${p.name}\nLatest Name: ${data.name}\n\nOpening editor to update.`);
+            // If name is different, warn the admin.
+            alert(`Name change detected!\n\nOld Name: ${p.name}\nNew Name: ${data.name}`);
+            if(confirm(`Do you want to update "${p.name}" to "${data.name}" now? The old name will be saved as an alias.`)){
+              if(!p.aliases) p.aliases = [];
+              if(!p.aliases.map(a => n(a)).includes(n(p.name))) {
+                  p.aliases.push(p.name);
+              }
+              p.name = data.name; // Update to the new name
+            }
           }
         }
-      }catch(e){console.warn("Mojang API check failed during update",e);}
+      }catch(e){console.warn("Mojang API check failed during update",e); alert("Could not contact Mojang API to check for name changes.");}
     }
-    displayPlayerEditor(p.name);
-    return;
+    // --- End of fix ---
+
+    const newTier=prompt(`Player found (${p.name}). Enter new tier:`,p.tier)||p.tier;
+    const newRegion=prompt("Enter new region (AS, EU, ME, AU, NA):",p.region)||p.region;
+    const newType=prompt("Enter new account type (premium/crack):",p.type)||p.type;
+    if(confirm("Rename player manually? (Use this for casing changes or corrections)")){ 
+        const newName=prompt("Enter new IGN:",p.name); 
+        if(newName){ p.name=newName.trim(); } 
+    }
+    p.tier=newTier.toUpperCase(); p.region=newRegion.toUpperCase(); p.type=newType.toLowerCase();
+    p.skin=getHeadURL(p.name,p.type,32);
+    savePlayers(); renderLeaderboard(); alert("Player updated."); return;
   }
 
+  // Logic for adding a new player (if not existing)
   const tier=prompt("Tier (HT1.. / RHT..):","HT1")||"HT1";
   const region=prompt("Region (AS, EU, ME, AU, NA):","NA").toUpperCase();
   const type=prompt("Account type (premium/crack):","premium").toLowerCase();
@@ -202,73 +237,6 @@ function removePlayer(){
   players=players.filter(p=>n(p.name)!==n(name)&&!(Array.isArray(p.aliases)&&p.aliases.map(a=>n(a)).includes(n(name))));
   if(players.length===before){ alert("Player not found."); return; }
   savePlayers(); renderLeaderboard(); alert("Removed.");
-}
-
-function displayPlayerEditor(playerName){
-  const resultDiv=document.getElementById('search-result');
-  const p=players.find(player=>n(player.name)===n(playerName));
-  if(!p){resultDiv.innerHTML='<p>Player not found.</p>';return;}
-
-  const regionOptions=regionList.map(r=>`<option value="${r}" ${p.region===r?'selected':''}>${r}</option>`).join('');
-  const editorHTML=`
-  <div class="mini-card" style="width: 280px;">
-      <img class="skin" src="${getHeadURL(p.name, p.type, 64)}" alt="${p.name}">
-      <div style="width:100%; display:flex; flex-direction:column; gap:8px; margin-top:10px;">
-          <label>Name: <input id="edit-name" type="text" value="${p.name}"></label>
-          <label>Tier: <input id="edit-tier" type="text" value="${p.tier}"></label>
-          <label>Region: <select id="edit-region">${regionOptions}</select></label>
-          <label>Type: <select id="edit-type"><option value="premium" ${p.type==='premium'?'selected':''}>Premium</option><option value="crack" ${p.type==='crack'?'selected':''}>Crack</option></select></label>
-          <div class="controls" style="margin-top:5px;">
-              <button onclick="savePlayerChanges('${p.name}')">Save Changes</button>
-              <button style="background:#555" onclick="document.getElementById('search-result').innerHTML=''">Cancel</button>
-          </div>
-      </div>
-  </div>`;
-  resultDiv.innerHTML=editorHTML;
-}
-
-async function savePlayerChanges(originalName){
-  const key=prompt("Enter admin key to save changes:");
-  if(key!==secretKey){alert("Unauthorized");return;}
-
-  const p=players.find(player=>n(player.name)===n(originalName));
-  if(!p){alert("Could not find player to save.");return;}
-
-  const newName=document.getElementById('edit-name').value.trim();
-  const newTier=document.getElementById('edit-tier').value.trim().toUpperCase();
-  const newRegion=document.getElementById('edit-region').value;
-  const newType=document.getElementById('edit-type').value;
-  
-  let finalName = newName;
-
-  if (newType === 'premium' && n(newName) !== n(p.name)) {
-      try {
-          const res = await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(newName)}`);
-          if (!res.ok) {
-              if(!confirm(`"${newName}" does not seem to be a valid premium Minecraft name. Save anyway?`)) return;
-          } else {
-              const data = await res.json();
-              finalName = data.name; // Use correctly cased name from Mojang
-          }
-      } catch (e) {
-          if(!confirm("Could not verify new name with Mojang API. Save anyway?")) return;
-      }
-  }
-
-  if(finalName && n(finalName)!==n(p.name)){
-    if(!p.aliases) p.aliases=[];
-    if(!p.aliases.map(a=>n(a)).includes(n(p.name))){p.aliases.push(p.name);}
-    p.name=finalName;
-  }
-  p.tier=newTier;
-  p.region=newRegion;
-  p.type=newType;
-  p.skin=getHeadURL(p.name,p.type,32);
-
-  savePlayers();
-  renderLeaderboard();
-  document.getElementById('search-result').innerHTML='';
-  alert("Player updated successfully!");
 }
 </script>
 </body>
