@@ -9,7 +9,7 @@
   h1 { color:#ffcc00; margin-bottom:20px; }
 
   /* Search */
-  .search-wrap{display:flex;justify-content:center;gap:8px;margin-bottom:16px;}
+  .search-wrap{display:flex;justify(content:center;gap:8px;margin-bottom:16px;}
   .search-wrap input{width:240px;padding:8px;border-radius:6px;border:1px solid #30363d;background:#161b22;color:#c9d1d9;}
   .search-wrap button{padding:8px 12px;border-radius:6px;border:none;background:#238636;color:white;cursor:pointer;}
   .search-wrap button:hover{background:#2ea043;}
@@ -21,7 +21,6 @@
   .mini-card .region{color:#9aa;font-size:13px;}
   .mini-card .name{font-weight:700;font-size:16px;}
   .mini-card .tier-box{display:flex;align-items:center;gap:8px;background:#212526;padding:6px 10px;border-radius:8px;font-weight:700;}
-  .mini-card .tier-box img{width:22px;height:22px;}
 
   /* Leaderboard */
   .leaderboard{display:flex;gap:10px;max-width:1200px;margin:0 auto;overflow-x:auto;padding-bottom:20px;}
@@ -34,9 +33,7 @@
   .player-row .tierbox{position:absolute;right:-100%;top:0;height:100%;width:55%;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;font-weight:700;color:#fff;font-size:12px;transition:right 0.28s ease;}
   .player-row:hover .tierbox{right:0;}
 
-  .controls{margin-top:10px;display:flex;justify-content:center;gap:10px;}
-  .controls button{padding:8px 12px;border-radius:6px;border:none;background:#238636;color:white;cursor:pointer;}
-  .small{font-size:12px;color:#9aa;margin-top:8px;}
+  .small{font-size:12px;color:#9aa;margin-top:20px;}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -53,14 +50,9 @@
 
 <div class="leaderboard" id="leaderboard-container"></div>
 
-<div class="controls">
-  <button onclick="addPlayer()">Add / Update (admin)</button>
-  <button onclick="removePlayer()">Remove (admin)</button>
-</div>
 <div class="small">HT > LT > Retired. Only T1-T3 can have Retired status.</div>
 
 <script>
-const secretKey="aceppp1122";
 const firebaseConfig={
   apiKey:"AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
   authDomain:"tierlist-3305a.firebaseapp.com",
@@ -72,11 +64,14 @@ const firebaseConfig={
 };
 
 const categories=["T1","T2","T3","T4","T5"];
+
+// Map both "High Tier X" and "HTX" to columns
 const categoryMap={
-  "HT1":"T1","LT1":"T1","RHT1":"T1","RLT1":"T1",
-  "HT2":"T2","LT2":"T2","RHT2":"T2","RLT2":"T2",
-  "HT3":"T3","LT3":"T3","RHT3":"T3","RLT3":"T3",
-  "HT4":"T4","LT4":"T4","HT5":"T5","LT5":"T5"
+  "High Tier 1":"T1","Low Tier 1":"T1","HT1":"T1","LT1":"T1","RHT1":"T1","RLT1":"T1",
+  "High Tier 2":"T2","Low Tier 2":"T2","HT2":"T2","LT2":"T2","RHT2":"T2","RLT2":"T2",
+  "High Tier 3":"T3","Low Tier 3":"T3","HT3":"T3","LT3":"T3","RHT3":"T3","RLT3":"T3",
+  "High Tier 4":"T4","Low Tier 4":"T4","HT4":"T4","LT4":"T4",
+  "High Tier 5":"T5","Low Tier 5":"T5","HT5":"T5","LT5":"T5"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -90,14 +85,16 @@ function getHeadURL(name, size=32) {
 
 playersRef.on("value", snapshot => {
   const data = snapshot.val();
-  players = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+  // FIXED: Properly handle the bot's object format
+  if (!data) players = [];
+  else if (Array.isArray(data)) players = data;
+  else players = Object.values(data);
+  
   renderLeaderboard();
 });
 
-function savePlayers() { playersRef.set(players); }
 function n(s) { return (s || "").toLowerCase().trim(); }
 
-/* ================== RENDER LOGIC (HT > LT > R) ================== */
 function renderLeaderboard() {
   const container = document.getElementById("leaderboard-container");
   container.innerHTML = "";
@@ -111,12 +108,12 @@ function renderLeaderboard() {
     cols[cat] = col.querySelector(".rows");
   });
 
-  // CUSTOM SORTING ORDER
   const sorted = [...players].sort((a, b) => {
     const getPriority = (t) => {
-      if (t.startsWith("HT")) return 1;  // HT on top
-      if (t.startsWith("LT")) return 2;  // LT second
-      if (t.startsWith("R")) return 3;   // Retired last
+      if (!t) return 99;
+      if (t.includes("High Tier") || t.startsWith("HT")) return 1;
+      if (t.includes("Low Tier") || t.startsWith("LT")) return 2;
+      if (t.startsWith("R")) return 3;
       return 4;
     };
     return getPriority(a.tier) - getPriority(b.tier);
@@ -129,8 +126,8 @@ function renderLeaderboard() {
     const row = document.createElement("div");
     row.className = "player-row";
     row.innerHTML = `
-      <img class="head" src="${getHeadURL(p.name, 32)}" alt="${p.name}">
-      <div class="player-name">${p.name}</div>
+      <img class="head" src="${getHeadURL(p.name || p.username, 32)}" alt="${p.name}">
+      <div class="player-name">${p.name || p.username}</div>
       <div class="tierbox">${p.region} | ${p.tier}</div>
     `;
     cols[cat].appendChild(row);
@@ -140,7 +137,7 @@ function renderLeaderboard() {
 function searchPlayer() {
   const q = n(document.getElementById("search-input").value);
   if (!q) return;
-  const found = players.find(p => n(p.name) === q);
+  const found = players.find(p => n(p.name || p.username) === q);
   const resDiv = document.getElementById("search-result");
   resDiv.innerHTML = "";
 
@@ -148,50 +145,12 @@ function searchPlayer() {
     const card = document.createElement("div");
     card.className = "mini-card";
     card.innerHTML = `
-      <img class="skin" src="${getHeadURL(found.name, 64)}">
-      <div class="name">${found.name}</div>
+      <img class="skin" src="${getHeadURL(found.name || found.username, 64)}">
+      <div class="name">${found.name || found.username}</div>
       <div class="tier-box">Tier: ${found.tier}</div>
     `;
     resDiv.appendChild(card);
   } else { alert("Not found"); }
-}
-
-/* ================== ADMIN LOGIC ================== */
-function addPlayer() {
-  const key = prompt("Admin key:");
-  if (key !== secretKey) return alert("Wrong key");
-
-  let name = prompt("IGN:").trim();
-  let tier = prompt("Tier (HT1, LT1, RHT1, etc):").toUpperCase();
-  let region = prompt("Region (NA, EU, etc):").toUpperCase();
-
-  // VALIDATION: Only T1, T2, and T3 can be Retired
-  if (tier.startsWith("R")) {
-    const tierNum = tier.replace(/\D/g, ""); // Extract number (1, 2, 3)
-    if (parseInt(tierNum) > 3) {
-      alert("Error: Only Tiers 1, 2, and 3 can have Retired status.");
-      return;
-    }
-  }
-
-  const existing = players.find(p => n(p.name) === n(name));
-  if (existing) {
-    existing.tier = tier;
-    existing.region = region;
-  } else {
-    players.push({ name, tier, region, type: "premium" });
-  }
-
-  savePlayers();
-  alert("Updated!");
-}
-
-function removePlayer() {
-  const key = prompt("Admin key:");
-  if (key !== secretKey) return alert("Wrong key");
-  const name = prompt("IGN to remove:");
-  players = players.filter(p => n(p.name) !== n(name));
-  savePlayers();
 }
 </script>
 </body>
