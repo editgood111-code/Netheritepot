@@ -3,155 +3,293 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Netheritepot Tierlist</title>
+<title>Netherite Pot - Rankings</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  body { font-family: Arial,sans-serif; background:#0d1117; color:#c9d1d9; text-align:center; padding:20px; }
-  h1 { color:#ffcc00; margin-bottom:20px; }
+  :root {
+    --bg-app: #09090b;
+    --bg-card: #18181b;
+    --bg-hover: #27272a;
+    --border: #27272a;
+    --text-main: #fafafa;
+    --text-muted: #a1a1aa;
+    --accent: #2563eb; /* Blue accent like reference */
+    --badge-bg: #262626;
+  }
 
-  /* Search */
-  .search-wrap{display:flex;justify(content:center;gap:8px;margin-bottom:16px;}
-  .search-wrap input{width:240px;padding:8px;border-radius:6px;border:1px solid #30363d;background:#161b22;color:#c9d1d9;}
-  .search-wrap button{padding:8px 12px;border-radius:6px;border:none;background:#238636;color:white;cursor:pointer;}
-  .search-wrap button:hover{background:#2ea043;}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background-color: var(--bg-app); color: var(--text-main); font-family: 'Inter', sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-  /* Search result */
-  #search-result{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
-  .mini-card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:10px;width:240px;display:flex;flex-direction:column;align-items:center;gap:8px;}
-  .mini-card img.skin{width:64px;height:64px;border-radius:8px;border:2px solid #fff;object-fit:cover;}
-  .mini-card .region{color:#9aa;font-size:13px;}
-  .mini-card .name{font-weight:700;font-size:16px;}
-  .mini-card .tier-box{display:flex;align-items:center;gap:8px;background:#212526;padding:6px 10px;border-radius:8px;font-weight:700;}
+  /* SIDEBAR */
+  .sidebar { width: 240px; border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; background: var(--bg-app); }
+  .brand { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .nav-item { padding: 10px 12px; border-radius: 6px; color: var(--text-muted); cursor: pointer; font-size: 14px; font-weight: 500; transition: 0.2s; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+  .nav-item:hover { background: var(--bg-hover); color: #fff; }
+  .nav-item.active { background: var(--bg-card); color: #fff; border: 1px solid var(--border); }
+  
+  /* MAIN CONTENT */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-  /* Leaderboard */
-  .leaderboard{display:flex;gap:10px;max-width:1200px;margin:0 auto;overflow-x:auto;padding-bottom:20px;}
-  .tier-column{flex:1;min-width:200px;background:#161b22;border-radius:10px;padding:8px;}
-  .tier-column h2{text-align:center;color:#58a6ff;border-bottom:1px solid #30363d;padding-bottom:6px;margin-bottom:8px;}
-  .rows{display:flex;flex-direction:column;gap:6px;}
-  .player-row{display:flex;align-items:center;gap:8px;position:relative;overflow:hidden;cursor:pointer;border-radius:6px;background:#212526;padding:4px;}
-  .player-row .head{width:32px;height:32px;border-radius:6px;border:1px solid #fff;flex-shrink:0;}
-  .player-row .player-name{font-weight:600;font-size:14px;white-space:nowrap;}
-  .player-row .tierbox{position:absolute;right:-100%;top:0;height:100%;width:55%;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;font-weight:700;color:#fff;font-size:12px;transition:right 0.28s ease;}
-  .player-row:hover .tierbox{right:0;}
+  /* HEADER */
+  .header { height: 70px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; background: rgba(9,9,11,0.8); backdrop-filter: blur(8px); }
+  .page-title { font-size: 20px; font-weight: 600; }
+  
+  .controls { display: flex; gap: 12px; }
+  .search-input { background: var(--bg-card); border: 1px solid var(--border); color: #fff; padding: 8px 12px; border-radius: 6px; width: 220px; font-size: 13px; outline: none; }
+  .search-input:focus { border-color: var(--text-muted); }
 
-  .small{font-size:12px;color:#9aa;margin-top:20px;}
+  .filter-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s; }
+  .filter-btn:hover, .filter-btn.active { background: var(--bg-hover); color: #fff; border-color: var(--text-muted); }
+
+  /* TIER GRID */
+  .board { flex: 1; overflow-x: auto; overflow-y: hidden; padding: 30px; display: flex; gap: 20px; }
+  .tier-col { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; max-height: 100%; }
+  
+  .tier-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+  .tier-title { font-weight: 700; font-size: 14px; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tier-count { font-size: 12px; color: var(--text-muted); background: var(--bg-card); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); }
+
+  /* SCROLLABLE LIST INSIDE COLUMNS */
+  .player-list { overflow-y: auto; padding-right: 5px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .player-list::-webkit-scrollbar { width: 5px; }
+  .player-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* SUB-HEADERS (High/Low) */
+  .sub-divider { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin: 15px 0 5px 0; padding-left: 2px; letter-spacing: 0.5px; }
+  
+  /* PLAYER CARD */
+  .player-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 10px; display: flex; align-items: center; gap: 12px; transition: transform 0.1s, border-color 0.1s; cursor: default; }
+  .player-card:hover { border-color: var(--text-muted); transform: translateY(-1px); }
+  
+  .avatar { width: 32px; height: 32px; border-radius: 6px; background: #000; flex-shrink: 0; }
+  
+  .info { flex: 1; overflow: hidden; }
+  .ign { font-size: 14px; font-weight: 600; color: #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .meta { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+  
+  .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; text-transform: uppercase; }
+  .badge-region { background: #262626; color: #a1a1aa; border: 1px solid #404040; }
+  .badge-tier { background: rgba(37, 99, 235, 0.1); color: #60a5fa; border: 1px solid rgba(37, 99, 235, 0.2); }
+
+  /* RETIRED STATUS */
+  .is-retired { opacity: 0.6; }
+  .is-retired .badge-tier { color: #f87171; background: rgba(248, 113, 113, 0.1); border-color: rgba(248, 113, 113, 0.2); }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .header { padding: 0 15px; }
+    .board { padding: 15px; }
+  }
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-<h1>Netheritepot Tierlist</h1>
 
-<div class="search-wrap">
-  <input id="search-input" placeholder="Search player...">
-  <button onclick="searchPlayer()">Search</button>
-</div>
-<div id="search-result"></div>
+  <div class="sidebar">
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      NetheritePot
+    </div>
+    <a href="#" class="nav-item active">Rankings</a>
+    <a href="#" class="nav-item">Guidelines</a>
+    <a href="#" class="nav-item">Staff</a>
+    <a href="#" class="nav-item">API</a>
+  </div>
 
-<div class="leaderboard" id="leaderboard-container"></div>
+  <div class="main">
+    <div class="header">
+      <div class="page-title">Rankings</div>
+      
+      <div class="controls">
+        <select id="region-filter" class="filter-btn" onchange="filterData()">
+          <option value="ALL">All Regions</option>
+          <option value="NA">NA</option>
+          <option value="EU">EU</option>
+          <option value="AS">AS</option>
+          <option value="AU">AU</option>
+          <option value="ME">ME</option>
+        </select>
+        <input type="text" id="search-input" class="search-input" placeholder="Search player..." onkeyup="filterData()">
+      </div>
+    </div>
 
-<div class="small">HT > LT > Retired. Only T1-T3 can have Retired status.</div>
+    <div class="board" id="board-container">
+      </div>
+  </div>
 
 <script>
-const firebaseConfig={
-  apiKey:"AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
-  authDomain:"tierlist-3305a.firebaseapp.com",
-  databaseURL:"https://tierlist-3305a-default-rtdb.firebaseio.com",
-  projectId:"tierlist-3305a",
-  storageBucket:"tierlist-3305a.firebasestorage.app",
-  messagingSenderId:"410709885310",
-  appId:"1:410709885310:web:ceab1ca94e0f45513f332f"
+// --- CONFIGURATION ---
+const firebaseConfig = {
+  apiKey: "AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
+  authDomain: "tierlist-3305a.firebaseapp.com",
+  databaseURL: "https://tierlist-3305a-default-rtdb.firebaseio.com",
+  projectId: "tierlist-3305a",
+  storageBucket: "tierlist-3305a.firebasestorage.app",
+  messagingSenderId: "410709885310",
+  appId: "1:410709885310:web:ceab1ca94e0f45513f332f"
 };
 
-const categories=["T1","T2","T3","T4","T5"];
-
-// Map both "High Tier X" and "HTX" to columns
-const categoryMap={
-  "High Tier 1":"T1","Low Tier 1":"T1","HT1":"T1","LT1":"T1","RHT1":"T1","RLT1":"T1",
-  "High Tier 2":"T2","Low Tier 2":"T2","HT2":"T2","LT2":"T2","RHT2":"T2","RLT2":"T2",
-  "High Tier 3":"T3","Low Tier 3":"T3","HT3":"T3","LT3":"T3","RHT3":"T3","RLT3":"T3",
-  "High Tier 4":"T4","Low Tier 4":"T4","HT4":"T4","LT4":"T4",
-  "High Tier 5":"T5","Low Tier 5":"T5","HT5":"T5","LT5":"T5"
-};
-
+// --- LOGIC ---
 firebase.initializeApp(firebaseConfig);
-const db=firebase.database();
-const playersRef=db.ref("players");
-let players=[];
+const db = firebase.database();
+let allPlayers = [];
 
-function getHeadURL(name, size=32) {
-  return `https://mc-heads.net/avatar/${encodeURIComponent(name)}/${size}.png`;
+// Define the exact column structure
+const TIER_STRUCTURE = [
+  { id: "T1", label: "Tier 1" },
+  { id: "T2", label: "Tier 2" },
+  { id: "T3", label: "Tier 3" },
+  { id: "T4", label: "Tier 4" },
+  { id: "T5", label: "Tier 5" }
+];
+
+// Map input strings to standard categories
+// HT = High Tier, LT = Low Tier, R = Retired
+function normalizeTier(t) {
+  if (!t) return { tier: "Unranked", sub: "none", retired: false };
+  const str = t.toUpperCase();
+  
+  let retired = false;
+  let cleanStr = str;
+  if (cleanStr.startsWith("R")) {
+    retired = true;
+    cleanStr = cleanStr.substring(1); // Remove 'R'
+  }
+
+  // Determine Tier Level (1-5)
+  let level = "Unranked";
+  if (cleanStr.includes("1")) level = "T1";
+  else if (cleanStr.includes("2")) level = "T2";
+  else if (cleanStr.includes("3")) level = "T3";
+  else if (cleanStr.includes("4")) level = "T4";
+  else if (cleanStr.includes("5")) level = "T5";
+
+  // Determine Sub-Tier (High/Low)
+  let sub = "Standard";
+  if (cleanStr.includes("HIGH") || cleanStr.startsWith("HT")) sub = "High";
+  if (cleanStr.includes("LOW") || cleanStr.startsWith("LT")) sub = "Low";
+
+  return { tier: level, sub: sub, retired: retired, original: t };
 }
 
-playersRef.on("value", snapshot => {
+// Fetch Data
+db.ref("players").on("value", snapshot => {
   const data = snapshot.val();
-  // FIXED: Properly handle the bot's object format
-  if (!data) players = [];
-  else if (Array.isArray(data)) players = data;
-  else players = Object.values(data);
+  if (!data) allPlayers = [];
+  else if (Array.isArray(data)) allPlayers = data;
+  else allPlayers = Object.values(data);
   
-  renderLeaderboard();
+  renderBoard();
 });
 
-function n(s) { return (s || "").toLowerCase().trim(); }
+function getHeadURL(name) {
+  return `https://mc-heads.net/avatar/${encodeURIComponent(name)}/64`;
+}
 
-function renderLeaderboard() {
-  const container = document.getElementById("leaderboard-container");
+// Main Render Function
+function renderBoard() {
+  const container = document.getElementById("board-container");
+  const regionFilter = document.getElementById("region-filter").value;
+  const searchTerm = document.getElementById("search-input").value.toLowerCase();
+
   container.innerHTML = "";
-  const cols = {};
 
-  categories.forEach(cat => {
-    const col = document.createElement("div");
-    col.className = "tier-column";
-    col.innerHTML = `<h2>${cat}</h2><div class="rows"></div>`;
-    container.appendChild(col);
-    cols[cat] = col.querySelector(".rows");
+  // 1. Filter Data
+  const filtered = allPlayers.filter(p => {
+    const name = (p.name || p.username || "").toLowerCase();
+    const region = (p.region || "").toUpperCase();
+    
+    const matchesSearch = name.includes(searchTerm);
+    const matchesRegion = regionFilter === "ALL" || region === regionFilter;
+    
+    return matchesSearch && matchesRegion;
   });
 
-  const sorted = [...players].sort((a, b) => {
-    const getPriority = (t) => {
-      if (!t) return 99;
-      if (t.includes("High Tier") || t.startsWith("HT")) return 1;
-      if (t.includes("Low Tier") || t.startsWith("LT")) return 2;
-      if (t.startsWith("R")) return 3;
-      return 4;
-    };
-    return getPriority(a.tier) - getPriority(b.tier);
-  });
+  // 2. Build Columns
+  TIER_STRUCTURE.forEach(colDef => {
+    const colDiv = document.createElement("div");
+    colDiv.className = "tier-col";
+    
+    // Sort players for this column
+    const playersInTier = filtered.map(p => {
+      const info = normalizeTier(p.tier);
+      return { ...p, ...info };
+    }).filter(p => p.tier === colDef.id);
 
-  sorted.forEach(p => {
-    const cat = categoryMap[p.tier];
-    if (!cols[cat]) return;
+    // Group by Sub-Tier (High, then Low, then Retired)
+    const high = playersInTier.filter(p => p.sub === "High" && !p.retired);
+    const low = playersInTier.filter(p => p.sub === "Low" && !p.retired);
+    const retired = playersInTier.filter(p => p.retired);
+    
+    // Sort alphabetically within subgroups
+    const sortAlpha = (a, b) => (a.name || "").localeCompare(b.name || "");
+    high.sort(sortAlpha);
+    low.sort(sortAlpha);
+    retired.sort(sortAlpha);
 
-    const row = document.createElement("div");
-    row.className = "player-row";
-    row.innerHTML = `
-      <img class="head" src="${getHeadURL(p.name || p.username, 32)}" alt="${p.name}">
-      <div class="player-name">${p.name || p.username}</div>
-      <div class="tierbox">${p.region} | ${p.tier}</div>
+    // HTML Construction
+    let html = `
+      <div class="tier-header">
+        <span class="tier-title">${colDef.label}</span>
+        <span class="tier-count">${playersInTier.length}</span>
+      </div>
+      <div class="player-list">
     `;
-    cols[cat].appendChild(row);
+
+    // Render Group: High Tier
+    if (high.length > 0) {
+      html += `<div class="sub-divider">High Tier</div>`;
+      high.forEach(p => html += createPlayerCard(p));
+    }
+
+    // Render Group: Low Tier
+    if (low.length > 0) {
+      html += `<div class="sub-divider">Low Tier</div>`;
+      low.forEach(p => html += createPlayerCard(p));
+    }
+
+    // Render Group: Retired
+    if (retired.length > 0) {
+      html += `<div class="sub-divider">Retired</div>`;
+      retired.forEach(p => html += createPlayerCard(p));
+    }
+
+    // If empty
+    if (playersInTier.length === 0) {
+      html += `<div style="text-align:center; color:#52525b; font-size:12px; margin-top:20px;">No players</div>`;
+    }
+
+    html += `</div>`; // End player-list
+    colDiv.innerHTML = html;
+    container.appendChild(colDiv);
   });
 }
 
-function searchPlayer() {
-  const q = n(document.getElementById("search-input").value);
-  if (!q) return;
-  const found = players.find(p => n(p.name || p.username) === q);
-  const resDiv = document.getElementById("search-result");
-  resDiv.innerHTML = "";
+function createPlayerCard(p) {
+  const name = p.name || p.username || "Unknown";
+  const region = p.region || "??";
+  const isRetired = p.retired ? "is-retired" : "";
+  const tierBadge = p.retired ? "Retired" : p.sub === "High" ? "HT" : "LT";
 
-  if (found) {
-    const card = document.createElement("div");
-    card.className = "mini-card";
-    card.innerHTML = `
-      <img class="skin" src="${getHeadURL(found.name || found.username, 64)}">
-      <div class="name">${found.name || found.username}</div>
-      <div class="tier-box">Tier: ${found.tier}</div>
-    `;
-    resDiv.appendChild(card);
-  } else { alert("Not found"); }
+  return `
+    <div class="player-card ${isRetired}">
+      <img src="${getHeadURL(name)}" class="avatar" loading="lazy">
+      <div class="info">
+        <div class="ign">${name}</div>
+        <div class="meta">
+          <span class="badge badge-region">${region}</span>
+          <span class="badge badge-tier">${tierBadge}</span>
+        </div>
+      </div>
+    </div>
+  `;
 }
+
+// Trigger render on filter change
+window.filterData = renderBoard;
+
 </script>
 </body>
 </html>
