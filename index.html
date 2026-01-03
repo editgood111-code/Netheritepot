@@ -13,9 +13,6 @@
     --border: #27272a;
     --text-main: #fafafa;
     --text-muted: #a1a1aa;
-    --accent: #eab308;
-    
-    /* Tier Colors */
     --t1: #ef4444; --t2: #f97316; --t3: #eab308; --t4: #22c55e; --t5: #3b82f6;
   }
 
@@ -61,7 +58,8 @@
   .player-strip.retired { opacity: 0.5; filter: grayscale(1); }
 
   .p-avatar { width: 32px; height: 32px; border-radius: 6px; background: #000; }
-  .p-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .p-name { font-weight: 600; font-size: 14px; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .p-pts { font-size: 11px; font-weight: 700; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; }
   
   .region-indicator { width: 4px; height: 20px; border-radius: 2px; }
 
@@ -94,6 +92,7 @@
     background: rgba(255,255,255,0.03); border: 1px solid var(--border);
     padding: 15px; border-radius: 16px;
   }
+  .m-box.full { grid-column: span 2; }
   .m-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; display: block;}
   .m-val { font-size: 18px; font-weight: 800; color: #fff; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .m-val img { width: 18px; height: 18px; }
@@ -123,19 +122,17 @@
   </nav>
 
   <div class="container">
-    <div class="tier-grid" id="grid">
-      </div>
+    <div class="tier-grid" id="grid"></div>
   </div>
 
   <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
     <div class="modal-card">
-      <button class="close-btn" onclick="closeModal(force=true)">✕</button>
+      <button class="close-btn" onclick="closeModal(null, true)">✕</button>
       <div class="modal-hero">
         <img id="m-bust" class="modal-bust" src="" alt="Player Bust">
       </div>
       <div class="modal-content">
         <div id="m-name" class="m-name">Username</div>
-        
         <div class="m-details">
           <div class="m-box">
             <span class="m-label">Region</span>
@@ -147,6 +144,10 @@
               <img src="https://mctiers.com/tier_icons/nethop.svg">
               <span>HT1</span>
             </span>
+          </div>
+          <div class="m-box full">
+            <span class="m-label">Points</span>
+            <span id="m-pts" class="m-val">0</span>
           </div>
         </div>
       </div>
@@ -172,6 +173,11 @@ const TIER_DEFS = [
   { id: "T5", label: "Tier 5", color: "var(--t5)" }
 ];
 
+const POINT_MAP = {
+  "HT1": 60, "LT1": 45, "HT2": 30, "LT2": 20, "HT3": 10,
+  "LT3": 6, "HT4": 4, "LT4": 3, "HT5": 2, "LT5": 1
+};
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 let players = [];
@@ -186,6 +192,7 @@ function parsePlayer(p) {
   const tier = (p.tier || "").toUpperCase();
   const name = p.name || p.username || "Unknown";
   const region = (p.region || "NA").toUpperCase();
+  const points = POINT_MAP[tier] || 0;
   
   let colId = "T5";
   if(tier.includes("1")) colId = "T1";
@@ -193,12 +200,7 @@ function parsePlayer(p) {
   else if(tier.includes("3")) colId = "T3";
   else if(tier.includes("4")) colId = "T4";
 
-  return { 
-    ...p, name, region, colId, 
-    isHigh: tier.includes("HT"), 
-    isRetired: tier.startsWith("R"),
-    displayTier: tier
-  };
+  return { ...p, name, region, colId, points, isHigh: tier.includes("HT"), isRetired: tier.startsWith("R"), displayTier: tier };
 }
 
 function renderBoard() {
@@ -210,34 +212,25 @@ function renderBoard() {
     const col = document.createElement("div");
     col.className = "tier-col";
     col.innerHTML = `<div class="col-header" style="background:${def.color}">${def.label}</div>`;
-    
     const list = document.createElement("div");
     list.className = "player-list";
 
     const filtered = players.map(parsePlayer).filter(p => p.colId === def.id && p.name.toLowerCase().includes(query));
-    
-    // Sort High Tier -> Low Tier -> Retired
-    filtered.sort((a,b) => {
-      if(a.isRetired !== b.isRetired) return a.isRetired ? 1 : -1;
-      if(a.isHigh !== b.isHigh) return b.isHigh ? 1 : -1;
-      return a.name.localeCompare(b.name);
-    });
+    filtered.sort((a,b) => b.points - a.points || a.name.localeCompare(b.name));
 
     filtered.forEach(p => {
       const item = document.createElement("div");
       item.className = `player-strip ${p.isRetired ? 'retired' : ''}`;
-      
       const regColor = p.region === "NA" ? "#3b82f6" : p.region === "EU" ? "#ef4444" : "#eab308";
-
       item.innerHTML = `
         <div class="region-indicator" style="background:${regColor}"></div>
         <img class="p-avatar" src="https://mc-heads.net/avatar/${p.name}/64">
         <div class="p-name">${p.name}</div>
+        <div class="p-pts">${p.points}pts</div>
       `;
       item.onclick = () => openModal(p);
       list.appendChild(item);
     });
-
     col.appendChild(list);
     grid.appendChild(col);
   });
@@ -246,13 +239,14 @@ function renderBoard() {
 function openModal(p) {
   document.getElementById("m-name").innerText = p.name;
   document.getElementById("m-region").innerText = p.region;
+  document.getElementById("m-pts").innerText = p.points;
   document.getElementById("m-tier").innerHTML = `<img src="https://mctiers.com/tier_icons/nethop.svg"> <span>${p.displayTier}</span>`;
   document.getElementById("m-bust").src = `https://render.crafty.gg/3d/bust/${p.name}`;
   document.getElementById("modal-overlay").classList.add("open");
 }
 
 function closeModal(e, force = false) {
-  if (force || e.target.id === "modal-overlay") {
+  if (force || (e && e.target.id === "modal-overlay")) {
     document.getElementById("modal-overlay").classList.remove("open");
   }
 }
