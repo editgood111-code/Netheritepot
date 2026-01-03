@@ -3,220 +3,108 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NethPot Rankings | MCTIERS</title>
+<title>Rankings | NetheritePot</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg-app: #09090b;
-    --bg-card: #18181b;
-    --bg-card-hover: #27272a;
+    --bg-card: #131316;
+    --bg-strip: #1c1c21;
     --border: #27272a;
     --text-main: #fafafa;
     --text-muted: #a1a1aa;
+    --accent: #eab308;
     
-    /* Tier Gradients */
-    --t1-grad: linear-gradient(135deg, #7f1d1d 0%, #ef4444 100%);
-    --t2-grad: linear-gradient(135deg, #7c2d12 0%, #f97316 100%);
-    --t3-grad: linear-gradient(135deg, #713f12 0%, #eab308 100%);
-    --t4-grad: linear-gradient(135deg, #14532d 0%, #22c55e 100%);
-    --t5-grad: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-
-    /* Region Colors */
-    --reg-NA: #3b82f6; --reg-EU: #ef4444; --reg-AS: #eab308; --reg-AU: #22c55e; --reg-ME: #a855f7;
-
-    /* Status Colors */
-    --ht-bg: rgba(255, 255, 255, 0.07);
-    --lt-bg: rgba(255, 255, 255, 0.02);
-    --retired-opacity: 0.5;
+    /* Tier Colors */
+    --t1: #ef4444; --t2: #f97316; --t3: #eab308; --t4: #22c55e; --t5: #3b82f6;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  
-  body { 
-    background-color: var(--bg-app); 
-    color: var(--text-main); 
-    font-family: 'Inter', sans-serif; 
-    min-height: 100vh; 
-    overflow-y: scroll;
-  }
+  body { background-color: var(--bg-app); color: var(--text-main); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-y: scroll; }
 
-  /* --- HEADER & NAV --- */
+  /* --- NAVIGATION --- */
   .navbar {
-    position: sticky; top: 0; z-index: 50;
-    background: rgba(9, 9, 11, 0.8);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50; background: rgba(9, 9, 11, 0.9);
+    backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);
   }
-
   .nav-content {
-    max-width: 1400px; margin: 0 auto; height: 70px;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 24px;
+    max-width: 1400px; margin: 0 auto; height: 72px;
+    display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
   }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 22px; letter-spacing: -0.5px; }
+  .brand img { width: 24px; height: 24px; }
 
-  .brand { 
-    display: flex; align-items: center; gap: 12px; 
-    font-weight: 800; font-size: 20px; letter-spacing: -0.5px;
-  }
-  
-  .gamemode-badge {
-    background: linear-gradient(to right, #a855f7, #ec4899);
-    padding: 4px 10px; border-radius: 6px;
-    font-size: 11px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
-  }
-
-  /* Search Bar */
-  .search-wrapper {
-    position: relative; width: 300px;
-  }
-  .search-icon {
-    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-    color: var(--text-muted); pointer-events: none;
-  }
   .search-input {
-    width: 100%; background: var(--bg-card); border: 1px solid var(--border);
-    padding: 10px 12px 10px 40px; border-radius: 8px;
-    color: #fff; font-size: 14px; transition: 0.2s;
+    background: var(--bg-card); border: 1px solid var(--border);
+    padding: 10px 16px; border-radius: 8px; color: #fff; font-size: 14px; width: 260px; outline: none;
   }
-  .search-input:focus {
-    border-color: var(--text-muted); outline: none;
-    background: var(--bg-card-hover);
-  }
+  .search-input:focus { border-color: var(--text-muted); }
 
-  /* --- MAIN BOARD --- */
-  .board-container {
-    max-width: 1400px; margin: 40px auto; padding: 0 24px;
-  }
+  /* --- BOARD --- */
+  .container { max-width: 1400px; margin: 40px auto; padding: 0 24px; }
+  .tier-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 
-  .tier-grid {
-    display: grid; 
-    grid-template-columns: repeat(5, 1fr); 
-    gap: 16px; 
-    align-items: start;
-  }
-
-  /* --- COLUMN STYLES --- */
-  .tier-col {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    display: flex; flex-direction: column;
-    overflow: hidden;
-    min-height: 200px;
-  }
-
+  .tier-col { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
   .col-header {
-    height: 56px; display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 18px; letter-spacing: -0.5px;
-    color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    position: relative;
+    height: 50px; display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 16px; text-transform: uppercase; color: #fff;
   }
-  
-  .col-header::after {
-    content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 1px;
-    background: rgba(255,255,255,0.1);
-  }
+
+  .player-list { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
 
   /* --- PLAYER STRIP --- */
-  .player-list { padding: 8px; display: flex; flex-direction: column; gap: 4px; }
-
-  .player-card {
-    display: flex; align-items: center; gap: 10px;
-    padding: 6px; border-radius: 6px;
-    background: var(--lt-bg);
-    cursor: pointer; transition: 0.2s cubic-bezier(0.2, 0, 0.2, 1);
-    border: 1px solid transparent;
-    position: relative; overflow: hidden;
+  .player-strip {
+    display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px;
+    background: var(--bg-strip); cursor: pointer; transition: 0.2s; border: 1px solid transparent;
   }
+  .player-strip:hover { transform: scale(1.02); background: #27272a; border-color: #3f3f46; }
+  .player-strip.retired { opacity: 0.5; filter: grayscale(1); }
 
-  .player-card.is-high { background: var(--ht-bg); border-color: rgba(255,255,255,0.05); }
-  .player-card.is-retired { opacity: var(--retired-opacity); filter: grayscale(0.8); }
+  .p-avatar { width: 32px; height: 32px; border-radius: 6px; background: #000; }
+  .p-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   
-  .player-card:hover { 
-    transform: translateY(-2px); 
-    background: var(--bg-card-hover);
-    border-color: var(--text-muted);
-    z-index: 2; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  }
-
-  /* Region Pill */
-  .region-pill {
-    width: 3px; height: 24px; border-radius: 4px;
-    background: var(--text-muted); transition: 0.2s;
-  }
-  .player-card:hover .region-pill { height: 32px; width: 4px; }
-
-  .p-avatar { 
-    width: 32px; height: 32px; border-radius: 6px; 
-    background: #000; flex-shrink: 0; 
-  }
-  
-  .p-info { flex: 1; min-width: 0; }
-  .p-name { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .p-badge { font-size: 10px; font-weight: 700; color: var(--text-muted); }
-
-  /* --- LOADING SKELETON --- */
-  .skeleton { animation: pulse 1.5s infinite; background: rgba(255,255,255,0.05); border-radius: 6px; }
-  .sk-strip { height: 44px; margin-bottom: 4px; width: 100%; }
-  @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 0.3; } 100% { opacity: 0.6; } }
+  .region-indicator { width: 4px; height: 20px; border-radius: 2px; }
 
   /* --- MODAL --- */
-  .modal-backdrop {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
-    z-index: 100; opacity: 0; pointer-events: none; transition: 0.3s;
-    display: flex; align-items: center; justify-content: center;
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+    z-index: 100; display: none; align-items: center; justify-content: center;
   }
-  .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+  .modal-overlay.open { display: flex; }
 
-  .modal {
-    width: 420px; background: #131316; border: 1px solid var(--border);
-    border-radius: 24px; padding: 0; overflow: hidden;
-    transform: scale(0.9) translateY(20px); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  .modal-card {
+    width: 440px; background: #18181b; border: 1px solid var(--border);
+    border-radius: 28px; overflow: hidden; position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7);
   }
-  .modal-backdrop.open .modal { transform: scale(1) translateY(0); }
 
-  .modal-header {
-    height: 120px; background: linear-gradient(to bottom, #27272a, #131316);
-    position: relative; display: flex; justify-content: center;
+  .modal-hero {
+    height: 160px; background: linear-gradient(to bottom, #27272a, #18181b);
+    display: flex; justify-content: center; align-items: flex-end;
   }
-  .close-btn {
-    position: absolute; top: 16px; right: 16px;
-    width: 32px; height: 32px; border-radius: 50%;
-    background: rgba(0,0,0,0.3); border: none; color: #fff;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: 0.2s;
-  }
-  .close-btn:hover { background: rgba(255,255,255,0.1); }
+  .modal-bust { width: 150px; height: 150px; transform: translateY(20px); filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); }
 
-  .modal-bust {
-    width: 140px; height: 140px; 
-    margin-top: 40px; /* Push down to overlap header */
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
-    transition: transform 0.3s ease;
-  }
-  .modal:hover .modal-bust { transform: scale(1.05) rotate(-2deg); }
-
-  .modal-body { padding: 20px 32px 40px 32px; text-align: center; }
-  .m-ign { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 4px; }
-  .m-meta { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; }
+  .modal-content { padding: 40px 30px 30px 30px; text-align: center; }
+  .m-name { font-size: 32px; font-weight: 800; color: #fff; margin-bottom: 15px; }
   
-  .tag { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase; }
-
-  .stats-row { 
-    display: flex; justify-content: space-between; 
-    background: rgba(255,255,255,0.03); 
-    border-radius: 12px; padding: 16px; border: 1px solid var(--border);
+  .m-details { 
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px;
   }
-  .stat { display: flex; flex-direction: column; gap: 2px; }
-  .stat-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-  .stat-val { font-size: 16px; font-weight: 700; color: #fff; }
-
-  @media (max-width: 1024px) {
-    .tier-grid { grid-template-columns: 1fr; gap: 30px; }
-    .search-wrapper { display: none; } /* Hide search on mobile to save space */
+  .m-box { 
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    padding: 15px; border-radius: 16px;
   }
+  .m-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; display: block;}
+  .m-val { font-size: 18px; font-weight: 800; color: #fff; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .m-val img { width: 18px; height: 18px; }
+
+  .close-btn {
+    position: absolute; top: 20px; right: 20px; width: 36px; height: 36px;
+    background: rgba(0,0,0,0.4); border: none; border-radius: 50%; color: #fff;
+    font-size: 20px; cursor: pointer; z-index: 10;
+  }
+
+  @media (max-width: 1100px) { .tier-grid { grid-template-columns: 1fr; } }
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -227,50 +115,38 @@
   <nav class="navbar">
     <div class="nav-content">
       <div class="brand">
-        <span>MCTIERS</span>
-        <div class="gamemode-badge">NETHPOT</div>
+        <img src="https://mctiers.com/tier_icons/nethop.svg" alt="icon">
+        NetheritePot
       </div>
-
-      <div class="search-wrapper">
-        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="search" class="search-input" placeholder="Search player..." onkeyup="renderBoard()">
-      </div>
+      <input type="text" id="search" class="search-input" placeholder="Search for a player..." onkeyup="renderBoard()">
     </div>
   </nav>
 
-  <div class="board-container">
+  <div class="container">
     <div class="tier-grid" id="grid">
-      <div class="tier-col"><div class="col-header" style="background:var(--t1-grad)">Tier 1</div><div class="player-list"><div class="skeleton sk-strip"></div><div class="skeleton sk-strip"></div></div></div>
-      <div class="tier-col"><div class="col-header" style="background:var(--t2-grad)">Tier 2</div><div class="player-list"><div class="skeleton sk-strip"></div><div class="skeleton sk-strip"></div></div></div>
-      <div class="tier-col"><div class="col-header" style="background:var(--t3-grad)">Tier 3</div><div class="player-list"><div class="skeleton sk-strip"></div><div class="skeleton sk-strip"></div></div></div>
-      <div class="tier-col"><div class="col-header" style="background:var(--t4-grad)">Tier 4</div><div class="player-list"><div class="skeleton sk-strip"></div><div class="skeleton sk-strip"></div></div></div>
-      <div class="tier-col"><div class="col-header" style="background:var(--t5-grad)">Tier 5</div><div class="player-list"><div class="skeleton sk-strip"></div><div class="skeleton sk-strip"></div></div></div>
-    </div>
+      </div>
   </div>
 
-  <div class="modal-backdrop" id="modal-backdrop">
-    <div class="modal" id="modal-content">
-      <div class="modal-header">
-        <button class="close-btn" onclick="closeModal()">✕</button>
-        <img id="m-bust" class="modal-bust" src="" alt="3D Bust">
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-card">
+      <button class="close-btn" onclick="closeModal(force=true)">✕</button>
+      <div class="modal-hero">
+        <img id="m-bust" class="modal-bust" src="" alt="Player Bust">
       </div>
-      <div class="modal-body">
-        <div id="m-ign" class="m-ign">Username</div>
-        <div class="m-meta" id="m-meta">
+      <div class="modal-content">
+        <div id="m-name" class="m-name">Username</div>
+        
+        <div class="m-details">
+          <div class="m-box">
+            <span class="m-label">Region</span>
+            <span id="m-region" class="m-val">NA</span>
           </div>
-
-        <div class="stats-row">
-          <div class="stat">
-            <span class="stat-label">Region</span>
-            <span id="m-region-val" class="stat-val">NA</span>
-          </div>
-          <div class="stat">
-            <span class="stat-label">Tier</span>
-            <span id="m-tier-val" class="stat-val">HT1</span>
-          </div>
-          <div class="stat">
-            <span class="stat-label">Type</span>
-            <span id="m-type-val" class="stat-val">Regular</span>
+          <div class="m-box">
+            <span class="m-label">Ranking</span>
+            <span id="m-tier" class="m-val">
+              <img src="https://mctiers.com/tier_icons/nethop.svg">
+              <span>HT1</span>
+            </span>
           </div>
         </div>
       </div>
@@ -278,7 +154,6 @@
   </div>
 
 <script>
-// --- CONFIGURATION ---
 const firebaseConfig = {
   apiKey: "AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
   authDomain: "tierlist-3305a.firebaseapp.com",
@@ -289,161 +164,98 @@ const firebaseConfig = {
   appId: "1:410709885310:web:ceab1ca94e0f45513f332f"
 };
 
-const TIERS = [
-  { id: "T1", label: "Tier 1", grad: "var(--t1-grad)" },
-  { id: "T2", label: "Tier 2", grad: "var(--t2-grad)" },
-  { id: "T3", label: "Tier 3", grad: "var(--t3-grad)" },
-  { id: "T4", label: "Tier 4", grad: "var(--t4-grad)" },
-  { id: "T5", label: "Tier 5", grad: "var(--t5-grad)" }
+const TIER_DEFS = [
+  { id: "T1", label: "Tier 1", color: "var(--t1)" },
+  { id: "T2", label: "Tier 2", color: "var(--t2)" },
+  { id: "T3", label: "Tier 3", color: "var(--t3)" },
+  { id: "T4", label: "Tier 4", color: "var(--t4)" },
+  { id: "T5", label: "Tier 5", color: "var(--t5)" }
 ];
 
-// --- APP INIT ---
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-let allPlayers = [];
+let players = [];
 
-// Listen for updates
-db.ref("players").on("value", snapshot => {
-  const data = snapshot.val();
-  // Robust parsing: Handles Array, Object, or Null
-  allPlayers = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+db.ref("players").on("value", snap => {
+  const val = snap.val();
+  players = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
   renderBoard();
 });
 
-// --- HELPER: Normalize Data ---
-function processPlayer(p) {
-  const rawTier = (p.tier || "").toUpperCase();
+function parsePlayer(p) {
+  const tier = (p.tier || "").toUpperCase();
   const name = p.name || p.username || "Unknown";
-  const region = (p.region || "??").toUpperCase();
-  const type = p.type || "Regular";
+  const region = (p.region || "NA").toUpperCase();
+  
+  let colId = "T5";
+  if(tier.includes("1")) colId = "T1";
+  else if(tier.includes("2")) colId = "T2";
+  else if(tier.includes("3")) colId = "T3";
+  else if(tier.includes("4")) colId = "T4";
 
-  // Determine Column (T1-T5)
-  let col = "Unranked";
-  if (rawTier.includes("1")) col = "T1";
-  else if (rawTier.includes("2")) col = "T2";
-  else if (rawTier.includes("3")) col = "T3";
-  else if (rawTier.includes("4")) col = "T4";
-  else if (rawTier.includes("5")) col = "T5";
-
-  const isHigh = rawTier.includes("HT") || rawTier.includes("HIGH");
-  const isRetired = rawTier.startsWith("R");
-
-  return { ...p, name, region, type, rawTier, col, isHigh, isRetired };
+  return { 
+    ...p, name, region, colId, 
+    isHigh: tier.includes("HT"), 
+    isRetired: tier.startsWith("R"),
+    displayTier: tier
+  };
 }
 
-// --- CORE RENDER ---
 function renderBoard() {
   const grid = document.getElementById("grid");
-  const search = document.getElementById("search").value.toLowerCase();
-  
-  grid.innerHTML = ""; // Clear existing
+  const query = document.getElementById("search").value.toLowerCase();
+  grid.innerHTML = "";
 
-  TIERS.forEach(tDef => {
-    // 1. Create Column
-    const colDiv = document.createElement("div");
-    colDiv.className = "tier-col";
+  TIER_DEFS.forEach(def => {
+    const col = document.createElement("div");
+    col.className = "tier-col";
+    col.innerHTML = `<div class="col-header" style="background:${def.color}">${def.label}</div>`;
     
-    // Header
-    colDiv.innerHTML = `<div class="col-header" style="background:${tDef.grad}">${tDef.label}</div>`;
-    
-    // Player Container
-    const listDiv = document.createElement("div");
-    listDiv.className = "player-list";
+    const list = document.createElement("div");
+    list.className = "player-list";
 
-    // 2. Filter & Sort Players
-    const players = allPlayers.map(processPlayer).filter(p => {
-      return p.col === tDef.id && p.name.toLowerCase().includes(search);
+    const filtered = players.map(parsePlayer).filter(p => p.colId === def.id && p.name.toLowerCase().includes(query));
+    
+    // Sort High Tier -> Low Tier -> Retired
+    filtered.sort((a,b) => {
+      if(a.isRetired !== b.isRetired) return a.isRetired ? 1 : -1;
+      if(a.isHigh !== b.isHigh) return b.isHigh ? 1 : -1;
+      return a.name.localeCompare(b.name);
     });
 
-    // Sort: High > Low > Retired > Alphabetical
-    players.sort((a, b) => {
-      if (a.isRetired !== b.isRetired) return a.isRetired ? 1 : -1; // Retired last
-      if (a.isHigh !== b.isHigh) return b.isHigh ? 1 : -1; // High Tier first
-      return a.name.localeCompare(b.name); // Then A-Z
+    filtered.forEach(p => {
+      const item = document.createElement("div");
+      item.className = `player-strip ${p.isRetired ? 'retired' : ''}`;
+      
+      const regColor = p.region === "NA" ? "#3b82f6" : p.region === "EU" ? "#ef4444" : "#eab308";
+
+      item.innerHTML = `
+        <div class="region-indicator" style="background:${regColor}"></div>
+        <img class="p-avatar" src="https://mc-heads.net/avatar/${p.name}/64">
+        <div class="p-name">${p.name}</div>
+      `;
+      item.onclick = () => openModal(p);
+      list.appendChild(item);
     });
 
-    // 3. Render Cards
-    if (players.length === 0) {
-      listDiv.innerHTML = `<div style="text-align:center; padding:20px; color:#52525b; font-size:12px;">No Players</div>`;
-    } else {
-      players.forEach(p => {
-        const card = document.createElement("div");
-        card.className = `player-card ${p.isHigh ? 'is-high' : ''} ${p.isRetired ? 'is-retired' : ''}`;
-        
-        // Region Color
-        const rColor = `var(--reg-${p.region}, #71717a)`;
-        
-        card.innerHTML = `
-          <div class="region-pill" style="background:${rColor}"></div>
-          <img class="p-avatar" src="https://mc-heads.net/avatar/${p.name}/64" loading="lazy">
-          <div class="p-info">
-            <div class="p-name">${p.name}</div>
-            <div class="p-badge">${p.isHigh ? 'HIGH' : 'LOW'} ${p.isRetired ? ' • RET' : ''}</div>
-          </div>
-        `;
-
-        card.onclick = () => openModal(p, rColor);
-        listDiv.appendChild(card);
-      });
-    }
-
-    colDiv.appendChild(listDiv);
-    grid.appendChild(colDiv);
+    col.appendChild(list);
+    grid.appendChild(col);
   });
 }
 
-// --- MODAL LOGIC ---
-function openModal(p, regionColor) {
-  const backdrop = document.getElementById("modal-backdrop");
-  
-  document.getElementById("m-ign").innerText = p.name;
+function openModal(p) {
+  document.getElementById("m-name").innerText = p.name;
+  document.getElementById("m-region").innerText = p.region;
+  document.getElementById("m-tier").innerHTML = `<img src="https://mctiers.com/tier_icons/nethop.svg"> <span>${p.displayTier}</span>`;
   document.getElementById("m-bust").src = `https://render.crafty.gg/3d/bust/${p.name}`;
-  
-  document.getElementById("m-region-val").innerText = p.region;
-  document.getElementById("m-region-val").style.color = regionColor;
-  
-  document.getElementById("m-tier-val").innerText = p.rawTier;
-  document.getElementById("m-type-val").innerText = p.type;
+  document.getElementById("modal-overlay").classList.add("open");
+}
 
-  // Meta Tags
-  const metaContainer = document.getElementById("m-meta");
-  metaContainer.innerHTML = "";
-  
-  // Tier Tag
-  const tierTag = document.createElement("span");
-  tierTag.className = "tag";
-  tierTag.innerText = p.col;
-  tierTag.style.background = getTierColor(p.col);
-  metaContainer.appendChild(tierTag);
-
-  if (p.isRetired) {
-    const retTag = document.createElement("span");
-    retTag.className = "tag";
-    retTag.innerText = "RETIRED";
-    retTag.style.background = "#52525b";
-    metaContainer.appendChild(retTag);
+function closeModal(e, force = false) {
+  if (force || e.target.id === "modal-overlay") {
+    document.getElementById("modal-overlay").classList.remove("open");
   }
-
-  backdrop.classList.add("open");
 }
-
-function closeModal() {
-  document.getElementById("modal-backdrop").classList.remove("open");
-}
-
-// Close when clicking outside
-document.getElementById("modal-backdrop").addEventListener("click", (e) => {
-  if (e.target.id === "modal-backdrop") closeModal();
-});
-
-function getTierColor(col) {
-  if(col==="T1") return "#ef4444";
-  if(col==="T2") return "#f97316";
-  if(col==="T3") return "#eab308";
-  if(col==="T4") return "#22c55e";
-  return "#3b82f6";
-}
-
 </script>
 </body>
 </html>
