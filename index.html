@@ -87,7 +87,7 @@
     </div>
     <div class="nav-right-group">
       <div class="nav-links">
-        <div class="nav-item active" id="btn-overall" onclick="switchView('overall')">Overall</div>
+        <div class="nav-item active" id="btn-overall" onclick="switchView('overall')">Top 10</div>
         <div class="nav-item" id="btn-nethpot" onclick="switchView('nethpot')">NethPot</div>
       </div>
       <a href="https://discord.gg/accNzNbEu4" target="_blank" class="discord-btn">
@@ -99,7 +99,7 @@
 
   <div class="container">
     <div class="search-row">
-      <h2 id="view-title" class="view-label">Top 10 Overall</h2>
+      <h2 id="view-title" class="view-label">Top 10</h2>
       <input type="text" id="search" class="search-input" placeholder="Search for a player..." onkeyup="renderViews()">
     </div>
 
@@ -150,7 +150,7 @@ function switchView(tab) {
   activeTab = tab;
   document.getElementById('view-overall').style.display = tab === 'overall' ? 'block' : 'none';
   document.getElementById('view-nethpot').style.display = tab === 'nethpot' ? 'grid' : 'none';
-  document.getElementById('view-title').innerText = tab === 'overall' ? 'Top 10 Overall' : 'NethPot Grid';
+  document.getElementById('view-title').innerText = tab === 'overall' ? 'Top 10' : 'NethPot Grid';
   document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
   document.getElementById('btn-' + tab).classList.add('active');
   renderViews();
@@ -171,13 +171,13 @@ function renderViews() {
   const allProcessed = players.map(p => {
     let rawTier = (p.tier || "LT5").toUpperCase();
     let cleanTier = rawTier.replace('R', '').replace(/[^H|L|T|1-5]/g, ""); 
-    return { ...p, pts: POINT_MAP[cleanTier] || 0, col: cleanTier.match(/\d/)?.[0] || "5", displayTier: rawTier };
+    return { ...p, pts: POINT_MAP[cleanTier] || 0, col: cleanTier.match(/\d/)?.[0] || "5", displayTier: rawTier, cleanTier: cleanTier };
   }).filter(p => p.name && p.name.toLowerCase().includes(query));
 
   const overall = document.getElementById("view-overall");
   const grid = document.getElementById("view-nethpot");
 
-  // Overall View (Top 10)
+  // Top 10 View
   overall.innerHTML = "";
   const leaderboard = [...allProcessed].sort((a,b) => b.pts - a.pts).slice(0, 10);
   
@@ -201,13 +201,16 @@ function renderViews() {
     });
   }
 
-  // NethPot Grid View
+  // NethPot Grid View - Sorted by Points (Ensures HT before LT)
   grid.innerHTML = "";
   ["1", "2", "3", "4", "5"].forEach(num => {
     let colHtml = `<div class="tier-col"><div class="col-header" style="background:var(--t${num})">Tier ${num}</div>`;
-    allProcessed.filter(p => p.col === num).forEach(p => {
-      colHtml += `<div class="player-strip" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')"><img src="https://mc-heads.net/avatar/${p.name}/22" style="border-radius:4px;"> ${p.name}</div>`;
-    });
+    allProcessed
+      .filter(p => p.col === num)
+      .sort((a, b) => b.pts - a.pts) // Sorts HT (higher pts) before LT (lower pts)
+      .forEach(p => {
+        colHtml += `<div class="player-strip" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')"><img src="https://mc-heads.net/avatar/${p.name}/22" style="border-radius:4px;"> ${p.name}</div>`;
+      });
     grid.innerHTML += colHtml + '</div>';
   });
 }
@@ -218,7 +221,7 @@ function openModal(name, tier, pts, region) {
   document.getElementById("m-region").innerText = region || "NA";
   
   const pill = document.getElementById("m-tier-pill");
-  pill.innerText = `🛡️ ${tier}`;
+  pill.innerText = ` ${tier}`;
   const tierNum = tier.replace('R', '').match(/\d/)?.[0] || "5";
   pill.style.background = `var(--t${tierNum})`;
   pill.style.color = "#fff";
