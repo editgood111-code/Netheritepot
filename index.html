@@ -14,7 +14,6 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background-color: var(--bg-app); color: var(--text-main); font-family: 'Inter', sans-serif; }
   
-  /* Top Navbar with Navigation on Right */
   .navbar {
     height: 70px; background: var(--bg-card); border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
@@ -39,13 +38,11 @@
 
   .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
   
-  /* Search Bar Area */
   .search-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
   .view-label { font-size: 24px; font-weight: 800; }
   .search-input { width: 300px; background: var(--bg-card); border: 1px solid var(--border); padding: 12px 18px; border-radius: 12px; color: #fff; outline: none; transition: 0.2s; }
   .search-input:focus { border-color: var(--accent); }
 
-  /* Overall Rank Items */
   .rank-item { 
     display: flex; align-items: center; gap: 20px; padding: 18px 24px; 
     background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; 
@@ -57,14 +54,12 @@
   .p-title { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
   .title-1 { color: #facc15; } .title-2 { color: #f87171; } .title-3 { color: #60a5fa; } .title-4 { color: #a1a1aa; }
 
-  /* NethPot Grid */
   .tier-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; }
   .tier-col { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; height: fit-content; padding-bottom: 10px; }
   .col-header { padding: 14px; text-align: center; font-weight: 900; font-size: 12px; text-transform: uppercase; }
   .player-strip { display: flex; align-items: center; gap: 10px; padding: 10px; margin: 6px 10px; background: var(--bg-strip); border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; }
   .player-strip:hover { background: #27272a; }
 
-  /* Classic Player Modal */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 200; display: none; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; }
   .modal-overlay.open { display: flex; opacity: 1; }
   .modal-card { width: 420px; background: #18181b; border: 1px solid var(--border); border-radius: 35px; padding: 45px; text-align: center; position: relative; }
@@ -109,6 +104,7 @@
 
   <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
     <div class="modal-card">
+      <button onclick="document.getElementById('modal-overlay').classList.remove('open')" style="position:absolute; top:20px; right:25px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-weight:800;">✕</button>
       <img id="m-bust" class="modal-bust" src="">
       <h2 id="m-name" style="font-size: 34px; font-weight: 800;"></h2>
       <div id="m-tier-pill" class="modal-tier-badge"></div>
@@ -140,9 +136,15 @@ let activeTab = 'overall';
 
 const POINT_MAP = { "HT1": 60, "LT1": 45, "HT2": 30, "LT2": 20, "HT3": 10, "LT3": 6, "HT4": 4, "LT4": 3, "HT5": 2, "LT5": 1 };
 
+// Handles both numeric and username-keyed data
 db.ref("players").on("value", snap => {
   const data = snap.val();
-  players = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+  if (!data) {
+      players = [];
+  } else {
+      // Convert Object (usernames) or Array (numbers) into a standard array
+      players = Object.values(data);
+  }
   renderViews();
 });
 
@@ -167,11 +169,10 @@ function getTitleHtml(rank) {
 function renderViews() {
   const query = document.getElementById("search").value.toLowerCase();
   
-  // Robust matching logic
   const allProcessed = players.map(p => {
     let rawTier = (p.tier || "LT5").toUpperCase();
     let cleanTier = rawTier.replace('R', '').replace(/[^H|L|T|1-5]/g, ""); 
-    return { ...p, pts: POINT_MAP[cleanTier] || 0, col: cleanTier.match(/\d/)?.[0] || "5", displayTier: rawTier, cleanTier: cleanTier };
+    return { ...p, pts: POINT_MAP[cleanTier] || 0, col: cleanTier.match(/\d/)?.[0] || "5", displayTier: rawTier };
   }).filter(p => p.name && p.name.toLowerCase().includes(query));
 
   const overall = document.getElementById("view-overall");
@@ -201,16 +202,19 @@ function renderViews() {
     });
   }
 
-  // NethPot Grid View - Sorted by Points (Ensures HT before LT)
+  // NethPot Grid View (Sorted HT then LT)
   grid.innerHTML = "";
   ["1", "2", "3", "4", "5"].forEach(num => {
     let colHtml = `<div class="tier-col"><div class="col-header" style="background:var(--t${num})">Tier ${num}</div>`;
-    allProcessed
-      .filter(p => p.col === num)
-      .sort((a, b) => b.pts - a.pts) // Sorts HT (higher pts) before LT (lower pts)
-      .forEach(p => {
-        colHtml += `<div class="player-strip" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')"><img src="https://mc-heads.net/avatar/${p.name}/22" style="border-radius:4px;"> ${p.name}</div>`;
-      });
+    
+    // Sort logic: higher points (HT) first
+    const tierGroup = allProcessed
+        .filter(p => p.col === num)
+        .sort((a, b) => b.pts - a.pts);
+
+    tierGroup.forEach(p => {
+      colHtml += `<div class="player-strip" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')"><img src="https://mc-heads.net/avatar/${p.name}/22" style="border-radius:4px;"> ${p.name}</div>`;
+    });
     grid.innerHTML += colHtml + '</div>';
   });
 }
@@ -221,7 +225,7 @@ function openModal(name, tier, pts, region) {
   document.getElementById("m-region").innerText = region || "NA";
   
   const pill = document.getElementById("m-tier-pill");
-  pill.innerText = ` ${tier}`;
+  pill.innerText = `🛡️ ${tier}`;
   const tierNum = tier.replace('R', '').match(/\d/)?.[0] || "5";
   pill.style.background = `var(--t${tierNum})`;
   pill.style.color = "#fff";
@@ -231,6 +235,23 @@ function openModal(name, tier, pts, region) {
 }
 
 function closeModal(e) { if(e.target.id === 'modal-overlay') document.getElementById("modal-overlay").classList.remove("open"); }
+
+/* TRANSFORMATION SCRIPT:
+  If your database still uses 0, 1, 2... and you want it to use usernames:
+  1. Uncomment the line 'fixDataKeys();' below.
+  2. Open the website once.
+  3. Re-comment the line.
+*/
+async function fixDataKeys() {
+    const snap = await db.ref("players").once("value");
+    const data = snap.val();
+    if (!data) return;
+    const updates = {};
+    Object.values(data).forEach(p => { if(p.name) updates[p.name] = p; });
+    await db.ref("players").set(updates);
+    console.log("Database converted to usernames!");
+}
+// fixDataKeys(); 
 </script>
 </body>
 </html>
