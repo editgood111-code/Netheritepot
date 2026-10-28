@@ -7,12 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-app: #08050e;
-            --bg-gradient: radial-gradient(circle at 50% 0%, #1e102d 0%, #08050e 70%);
-            --bg-card: rgba(22, 16, 34, 0.75);
-            --bg-strip: rgba(33, 24, 51, 0.8);
-            --border: rgba(147, 51, 234, 0.2);
-            --border-hover: rgba(168, 85, 247, 0.5);
+            --bg-app: #090514;
+            --bg-card: rgba(26, 17, 43, 0.75);
+            --bg-strip: rgba(38, 26, 61, 0.8);
+            --border: rgba(168, 85, 247, 0.25);
+            --border-hover: rgba(192, 132, 252, 0.6);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --accent: #a855f7;
@@ -26,13 +25,15 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        body { 
-            background: var(--bg-app);
-            background-image: var(--bg-gradient);
+        html, body { 
+            min-height: 100vh;
+            background-color: var(--bg-app);
+            background-image: 
+                radial-gradient(circle at 50% -20%, #4c1d95 0%, transparent 60%),
+                radial-gradient(circle at 100% 100%, #1e1b4b 0%, transparent 50%);
             background-attachment: fixed;
             color: var(--text-main); 
             font-family: 'Inter', sans-serif;
-            min-height: 100vh;
         }
 
         .navbar {
@@ -63,26 +64,3 @@
 
         .nav-brand img {
             width: 28px;
-            height: 28px;
-            object-fit: contain;
-        }
-
-        .nav-right-group { display: flex; align-items: center; gap: 12px; }
-        .nav-links { display: flex; gap: 6px; }
-
-        .nav-item { 
-            padding: 8px 16px; 
-            border-radius: 10px; 
-            color: var(--text-muted); 
-            cursor: pointer; 
-            font-weight: 700; 
-            font-size: 13px; 
-            transition: all 0.2s ease; 
-        }
-
-        .nav-item:hover { color: #fff; background: rgba(168, 85, 247, 0.15); }
-        .nav-item.active { 
-            background: rgba(168, 85, 247, 0.25); 
-            color: #fff; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 0 15px rgba(168, 85,
