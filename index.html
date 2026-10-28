@@ -47,10 +47,309 @@
         .intro-logo-text { font-size: 42px; font-weight: 900; font-style: italic; letter-spacing: -1px; background: linear-gradient(135deg, #facc15 0%, #f97316 50%, #ef4444 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; display: inline-block; }
         .intro-desc { color: var(--text-muted); font-size: 15px; line-height: 1.6; margin-bottom: 30px; }
         .intro-btns { display: flex; gap: 12px; }
-        .btn-primary { background: #fff; color: #000; padding: 12px 24px; border-radius: 12px; font-weight: 800; font-size: 14px; text-decoration: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: #fff; color: #000; padding: 12px 24px; border-radius: 12px; font-weight: 800; font-size: 14px; text-decoration: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer; }
         .btn-primary:hover { background: #e4e4e7; transform: translateY(-1px); }
         .btn-secondary { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border); padding: 12px 24px; border-radius: 12px; font-weight: 800; font-size: 14px; text-decoration: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
         .btn-secondary:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
 
         .top-players-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); }
-        .top-player-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 20px
+        .top-player-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
+        .top-player-card:hover { border-color: #3f3f46; transform: translateY(-2px); background: #18181b; }
+        .tp-rank { font-size: 24px; font-weight: 900; color: #facc15; width: 30px; }
+        .tp-rank-2 { color: #f87171; }
+        .tp-rank-3 { color: #60a5fa; }
+
+        .server-footer-bar { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 25px; margin-top: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+
+        .search-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .view-label { font-size: 24px; font-weight: 800; }
+        .search-input { width: 300px; background: var(--bg-card); border: 1px solid var(--border); padding: 12px 18px; border-radius: 12px; color: #fff; outline: none; transition: 0.2s; }
+        .search-input:focus { border-color: var(--accent); }
+
+        .rank-item { 
+            display: flex; align-items: center; gap: 20px; padding: 18px 24px; 
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; 
+            margin-bottom: 12px; transition: 0.2s; cursor: pointer; 
+        }
+        .rank-item:hover { transform: translateY(-2px); border-color: #3f3f46; background: #1a1a1e; }
+        .rank-pos { font-size: 26px; font-weight: 900; width: 50px; text-align: center; color: var(--text-muted); }
+        
+        .p-title { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
+        .title-1 { color: #facc15; } .title-2 { color: #f87171; } .title-3 { color: #60a5fa; } .title-4 { color: #a1a1aa; }
+
+        .tier-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; }
+        .tier-col { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; height: fit-content; padding-bottom: 10px; }
+        .col-header { padding: 14px; text-align: center; font-weight: 900; font-size: 12px; text-transform: uppercase; }
+        .player-strip { display: flex; align-items: center; gap: 10px; padding: 10px; margin: 6px 10px; background: var(--bg-strip); border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .player-strip:hover { background: #27272a; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 200; display: none; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; }
+        .modal-overlay.open { display: flex; opacity: 1; }
+        .modal-card { width: 420px; background: #18181b; border: 1px solid var(--border); border-radius: 35px; padding: 45px; text-align: center; position: relative; }
+        .modal-bust { width: 150px; margin-bottom: 15px; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.6)); }
+        .modal-tier-badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 12px; font-weight: 900; font-size: 14px; margin-bottom: 25px; }
+        .modal-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .m-stat-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 18px; border-radius: 20px; }
+        .m-stat-label { font-size: 10px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 6px; }
+        .m-stat-val { font-size: 20px; font-weight: 900; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a class="nav-brand" onclick="switchView('intro')">
+            <img src="https://mctiers.com/tier_icons/nethop.svg" width="30"> NETHTIERS
+        </a>
+        <div class="nav-right-group">
+            <div class="nav-links">
+                <button class="nav-item active" id="btn-intro" onclick="switchView('intro')">Home</button>
+                <button class="nav-item" id="btn-overall" onclick="switchView('overall')">Rankings</button>
+                <button class="nav-item" id="btn-nethpot" onclick="switchView('nethpot')">NethPot</button>
+                <span class="nav-item" style="cursor: default; opacity: 0.7;">Server IP: soon</span>
+                <span class="nav-item" style="cursor: default; opacity: 0.7;">Events: soon</span>
+            </div>
+            <a href="https://discord.gg/mcwuHcrqGk" target="_blank" class="discord-btn">
+                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+                Discord
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- INTRO VIEW -->
+        <div id="view-intro">
+            <div class="intro-grid">
+                <div class="intro-left">
+                    <div class="intro-logo-text">NETHTIERS</div>
+                    <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 12px;">The Minecraft PvP Tier List</h2>
+                    <p class="intro-desc">Nethtiers is a Minecraft PvP tier list. Players are tested in nethpot, placed in tiers from Tier 1 to Tier 5, and ranked on one overall leaderboard.</p>
+                    <div class="intro-btns">
+                        <button class="btn-primary" onclick="switchView('overall')">View rankings →</button>
+                        <a href="https://discord.gg/mcwuHcrqGk" target="_blank" class="btn-secondary">Get tier tested</a>
+                    </div>
+                </div>
+                <div>
+                    <div class="top-players-header">
+                        <span>🏆 Top Players</span>
+                        <span style="cursor:pointer;" onclick="switchView('overall')">Full leaderboard →</span>
+                    </div>
+                    <div id="intro-top3-container">
+                        <div style="padding: 20px; color: var(--text-muted); text-align: center;">Loading top players...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="server-footer-bar">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 12px; color: var(--accent);">🏆</span>
+                    <div>
+                        <span style="font-size: 10px; color: var(--text-muted); font-weight: 800; display: block;">SERVER IP</span>
+                        <span style="font-weight: 800; font-size: 14px;">soon</span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block;"></span>
+                    <span style="font-weight: 700; font-size: 14px;">Online</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RANKINGS & NETHIPOT VIEWS -->
+        <div id="view-rankings-wrapper" style="display:none;">
+            <div class="search-row">
+                <h2 id="view-title" class="view-label">Top 10</h2>
+                <input type="text" id="search" class="search-input" placeholder="Search for a player..." onkeyup="renderViews()">
+            </div>
+
+            <div id="view-overall"></div>
+            <div id="view-nethpot" style="display:none" class="tier-grid"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-card">
+            <button onclick="document.getElementById('modal-overlay').classList.remove('open')" style="position:absolute; top:20px; right:25px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-weight:800;">✕</button>
+            <img id="m-bust" class="modal-bust" src="">
+            <h2 id="m-name" style="font-size: 34px; font-weight: 800;"></h2>
+            <div id="m-tier-pill" class="modal-tier-badge"></div>
+            
+            <div class="modal-stats-grid">
+                <div class="m-stat-box">
+                    <span class="m-stat-label">Total Points</span>
+                    <span id="m-pts" class="m-stat-val"></span>
+                </div>
+                <div class="m-stat-box">
+                    <span class="m-stat-label">Region</span>
+                    <span id="m-region" class="m-stat-val"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3FWTZ587KxVbe1POuw-2Rk5FSrcpZ_QU",
+            authDomain: "tierlist-3305a.firebaseapp.com",
+            databaseURL: "https://tierlist-3305a-default-rtdb.firebaseio.com",
+            projectId: "tierlist-3305a",
+            storageBucket: "tierlist-3305a.firebasestorage.app",
+            messagingSenderId: "410709885310",
+            appId: "1:410709885310:web:ceab1ca94e0f45513f332f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.players = [];
+        window.activeTab = 'intro';
+
+        const POINT_MAP = { "HT1": 60, "LT1": 45, "HT2": 30, "LT2": 20, "HT3": 10, "LT3": 6, "HT4": 4, "LT4": 3, "HT5": 2, "LT5": 1 };
+
+        window.switchView = function(tab) {
+            window.activeTab = tab;
+            const isIntro = tab === 'intro';
+            
+            const introElem = document.getElementById('view-intro');
+            const wrapperElem = document.getElementById('view-rankings-wrapper');
+            
+            if (introElem) introElem.style.display = isIntro ? 'block' : 'none';
+            if (wrapperElem) wrapperElem.style.display = isIntro ? 'none' : 'block';
+            
+            if (!isIntro) {
+                const overallElem = document.getElementById('view-overall');
+                const nethpotElem = document.getElementById('view-nethpot');
+                const titleElem = document.getElementById('view-title');
+                
+                if (overallElem) overallElem.style.display = tab === 'overall' ? 'block' : 'none';
+                if (nethpotElem) nethpotElem.style.display = tab === 'nethpot' ? 'grid' : 'none';
+                if (titleElem) titleElem.innerText = tab === 'overall' ? 'Top 10 Rankings' : 'NethPot Tiers Grid';
+            }
+
+            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+            const activeBtn = document.getElementById('btn-' + tab);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            renderViews();
+        };
+
+        function getTitleHtml(rank) {
+            if (rank === 1) return `<span class="p-title title-1">🏆 Combat Grandmaster</span>`;
+            if (rank <= 3) return `<span class="p-title title-2">⚔️ Combat Master</span>`;
+            if (rank <= 7) return `<span class="p-title title-3">🔥 Combat Ace</span>`;
+            if (rank <= 10) return `<span class="p-title title-4">🎖️ Combat Specialist</span>`;
+            return "";
+        }
+
+        window.renderViews = function() {
+            const searchInput = document.getElementById("search");
+            const query = searchInput ? searchInput.value.toLowerCase() : "";
+            
+            const allProcessed = window.players.map(p => {
+                let rawTier = (p.tier || "LT5").toUpperCase();
+                let cleanTier = rawTier.replace('R', '').replace(/[^H|L|T|1-5]/g, ""); 
+                return { ...p, pts: POINT_MAP[cleanTier] || 0, col: cleanTier.match(/\d/)?.[0] || "5", displayTier: rawTier };
+            }).filter(p => p.name && p.name.toLowerCase().includes(query));
+
+            const leaderboard = [...allProcessed].sort((a,b) => b.pts - a.pts).slice(0, 10);
+            
+            // Render Intro Top 3 Preview
+            const introTop3 = document.getElementById("intro-top3-container");
+            if (introTop3) {
+                const top3 = leaderboard.slice(0, 3);
+                if (top3.length === 0) {
+                    introTop3.innerHTML = `<div style="padding: 20px; color: var(--text-muted); text-align: center;">No players loaded yet.</div>`;
+                } else {
+                    introTop3.innerHTML = "";
+                    top3.forEach((p, i) => {
+                        introTop3.innerHTML += `
+                            <div class="top-player-card" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')">
+                                <div class="tp-rank ${i===1?'tp-rank-2':i===2?'tp-rank-3':''}">#${i+1}</div>
+                                <img src="https://mc-heads.net/avatar/${p.name}/40" style="border-radius:8px;">
+                                <div style="flex-grow:1;">
+                                    <div style="font-weight: 800; font-size: 16px;">${p.name}</div>
+                                    <div style="font-size: 12px; color: var(--text-muted);">Combat Tier (${p.pts} pts)</div>
+                                </div>
+                                <div style="font-weight: 900; font-size: 13px; background: rgba(255,255,255,0.05); padding: 6px 12px; border-radius: 8px;">${p.region || 'NA'}</div>
+                            </div>`;
+                    });
+                }
+            }
+
+            // Top 10 View
+            const overall = document.getElementById("view-overall");
+            if (overall) {
+                overall.innerHTML = "";
+                if (leaderboard.length === 0) {
+                    overall.innerHTML = `<div style="text-align:center; padding:100px; opacity:0.4;">No players found in database.</div>`;
+                } else {
+                    leaderboard.forEach((p, i) => {
+                        overall.innerHTML += `
+                            <div class="rank-item" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')">
+                                <div class="rank-pos">#${i+1}</div>
+                                <img src="https://mc-heads.net/avatar/${p.name}/44" style="border-radius:10px;">
+                                <div style="flex-grow:1">
+                                    <span style="font-weight: 800; font-size: 18px;">${p.name}</span>
+                                    ${getTitleHtml(i+1)}
+                                </div>
+                                <div style="text-align:right">
+                                    <span style="display:block; font-size: 20px; font-weight: 900;">${p.pts}</span>
+                                    <span style="font-size: 9px; font-weight: 800; color: var(--text-muted);">POINTS</span>
+                                </div>
+                            </div>`;
+                    });
+                }
+            }
+
+            // NethPot Grid View
+            const grid = document.getElementById("view-nethpot");
+            if (grid) {
+                grid.innerHTML = "";
+                ["1", "2", "3", "4", "5"].forEach(num => {
+                    let colHtml = `<div class="tier-col"><div class="col-header" style="background:var(--t${num})">Tier ${num}</div>`;
+                    const tierGroup = allProcessed.filter(p => p.col === num).sort((a, b) => b.pts - a.pts);
+                    tierGroup.forEach(p => {
+                        colHtml += `<div class="player-strip" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')"><img src="https://mc-heads.net/avatar/${p.name}/22" style="border-radius:4px;"> ${p.name}</div>`;
+                    });
+                    grid.innerHTML += colHtml + '</div>';
+                });
+            }
+        };
+
+        window.openModal = function(name, tier, pts, region) {
+            document.getElementById("m-name").innerText = name;
+            document.getElementById("m-pts").innerText = pts;
+            document.getElementById("m-region").innerText = region || "NA";
+            const pill = document.getElementById("m-tier-pill");
+            pill.innerText = `🛡️ ${tier}`;
+            const tierNum = tier.replace('R', '').match(/\d/)?.[0] || "5";
+            pill.style.background = `var(--t${tierNum})`;
+            document.getElementById("m-bust").src = `https://render.crafty.gg/3d/bust/${name}`;
+            document.getElementById("modal-overlay").classList.add("open");
+        };
+
+        window.closeModal = function(e) { 
+            if(e.target.id === 'modal-overlay') document.getElementById("modal-overlay").classList.remove("open"); 
+        };
+
+        // Realtime Listener
+        const playersRef = ref(db, 'players');
+        onValue(playersRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                window.players = Object.values(data);
+            } else {
+                window.players = [];
+            }
+            renderViews();
+        }, (error) => {
+            console.error("Firebase Read Error:", error);
+        });
+
+        // Initialize view safely
+        window.switchView('intro');
+    </script>
+</body>
+</html>
