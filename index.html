@@ -232,6 +232,15 @@
 
         const POINT_MAP = { "HT1": 60, "LT1": 45, "HT2": 30, "LT2": 20, "HT3": 10, "LT3": 6, "HT4": 4, "LT4": 3, "HT5": 2, "LT5": 1 };
 
+        // Helper to prioritize HT over LT within the same column
+        function getTierSubPriority(tierStr) {
+            if (!tierStr) return 0;
+            const clean = tierStr.toUpperCase();
+            if (clean.startsWith('HT')) return 2;
+            if (clean.startsWith('LT')) return 1;
+            return 0;
+        }
+
         window.switchView = function(tab) {
             window.activeTab = tab;
             const isIntro = tab === 'intro';
@@ -324,13 +333,23 @@
                 }
             }
 
-            // NethPot Grid View
+            // NethPot Grid View with HT -> LT Priority Sorting
             const grid = document.getElementById("view-nethpot");
             if (grid) {
                 grid.innerHTML = "";
                 ["1", "2", "3", "4", "5"].forEach(num => {
                     let colHtml = `<div class="tier-col"><div class="col-header" style="background:var(--t${num})">Tier ${num}</div>`;
-                    const tierGroup = allProcessed.filter(p => p.col === num).sort((a, b) => b.pts - a.pts);
+                    
+                    const tierGroup = allProcessed.filter(p => p.col === num).sort((a, b) => {
+                        // 1. Sort HT over LT
+                        const subA = getTierSubPriority(a.displayTier);
+                        const subB = getTierSubPriority(b.displayTier);
+                        if (subA !== subB) return subB - subA;
+                        
+                        // 2. Sort by Points
+                        return b.pts - a.pts;
+                    });
+
                     tierGroup.forEach(p => {
                         colHtml += `<div class="player-strip" id="strip-${p.name.toLowerCase()}" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')" oncontextmenu="openContextMenu(event, '${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')"><img src="https://mc-heads.net/avatar/${p.name}/22" style="border-radius:4px;"> ${p.name}</div>`;
                     });
