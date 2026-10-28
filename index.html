@@ -72,7 +72,7 @@
             margin-bottom: 12px; transition: 0.2s; cursor: pointer; 
         }
         .rank-item:hover { transform: translateY(-2px); border-color: #3f3f46; background: #1a1a1e; }
-        .rank-item.highlighted { border-color: var(--accent); box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+        .rank-item.highlighted { border-color: var(--accent); box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
         .rank-pos { font-size: 26px; font-weight: 900; width: 50px; text-align: center; color: var(--text-muted); }
         
         .p-title { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
@@ -89,29 +89,24 @@
         .player-strip:hover { background: #27272a; }
         .player-strip.highlighted { border: 1px solid var(--accent); background: #27272a; }
 
-        /* MCTiers Exact Profile Modal Styles */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 200; display: none; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; }
         .modal-overlay.open { display: flex; opacity: 1; }
-        .modal-card { width: 440px; background: #131316; border: 1px solid var(--border); border-radius: 28px; padding: 35px 30px; text-align: center; position: relative; box-shadow: 0 25px 50px rgba(0,0,0,0.8); }
-        .modal-bust-container { width: 90px; height: 90px; background: #1c1c21; border-radius: 50%; margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); overflow: hidden; }
-        .modal-bust { width: 75px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6)); }
-        .modal-name { font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 8px; }
-        .modal-tier-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 10px; font-weight: 800; font-size: 13px; margin-bottom: 8px; }
-        .modal-region { font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 20px; text-transform: uppercase; }
-        
-        .modal-links-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; }
-        .modal-link-btn { background: rgba(255,255,255,0.04); border: 1px solid var(--border); padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
-        .modal-link-btn:hover { background: rgba(255,255,255,0.08); border-color: #3f3f46; }
+        .modal-card { width: 420px; background: #18181b; border: 1px solid var(--border); border-radius: 35px; padding: 45px; text-align: center; position: relative; }
+        .modal-bust { width: 150px; margin-bottom: 15px; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.6)); }
+        .modal-tier-badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 12px; font-weight: 900; font-size: 14px; margin-bottom: 25px; }
+        .modal-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .m-stat-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 18px; border-radius: 20px; }
+        .m-stat-label { font-size: 10px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 6px; }
+        .m-stat-val { font-size: 20px; font-weight: 900; }
 
-        .modal-rank-box { background: #18181b; border: 1px solid var(--border); border-radius: 16px; padding: 18px; text-align: left; margin-bottom: 20px; }
-        .modal-rank-label { font-size: 10px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 4px; }
-        .modal-rank-content { display: flex; align-items: center; justify-content: space-between; }
-        .modal-rank-num { font-size: 24px; font-weight: 900; color: #fff; }
-        .modal-overall-pill { background: rgba(239, 68, 68, 0.1); color: var(--accent); padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; }
-
-        .modal-tiers-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); text-align: left; margin-bottom: 10px; }
-        .modal-tiers-row { display: flex; gap: 6px; justify-content: space-between; background: #18181b; border: 1px solid var(--border); padding: 12px; border-radius: 14px; }
-        .modal-tier-slot { width: 32px; height: 32px; background: #27272a; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: var(--text-muted); }
+        /* Right Click Context Menu Popup */
+        .context-menu {
+            position: fixed; z-index: 300; background: #18181b; border: 1px solid var(--border);
+            border-radius: 12px; padding: 12px 16px; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+            min-width: 180px;
+        }
+        .context-menu-title { font-size: 14px; font-weight: 800; color: #fff; margin-bottom: 6px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+        .context-menu-item { font-size: 12px; color: var(--text-muted); margin: 4px 0; font-weight: 600; display: flex; align-items: center; gap: 6px; }
     </style>
 </head>
 <body>
@@ -186,50 +181,33 @@
         </div>
     </div>
 
-    <!-- EXACT MCTIERS PROFILE MODAL -->
+    <!-- MODAL -->
     <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
         <div class="modal-card">
-            <button onclick="document.getElementById('modal-overlay').classList.remove('open')" style="position:absolute; top:20px; right:20px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size: 16px; font-weight:800;">✕</button>
+            <button onclick="document.getElementById('modal-overlay').classList.remove('open')" style="position:absolute; top:20px; right:25px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-weight:800;">✕</button>
+            <img id="m-bust" class="modal-bust" src="">
+            <h2 id="m-name" style="font-size: 34px; font-weight: 800;"></h2>
+            <div id="m-tier-pill" class="modal-tier-badge"></div>
             
-            <div class="modal-bust-container">
-                <img id="m-bust" class="modal-bust" src="">
-            </div>
-            
-            <h2 id="m-name" class="modal-name">Player</h2>
-            <div>
-                <span id="m-tier-pill" class="modal-tier-badge"><img src="https://mctiers.gg/tier_icons/nethop.svg" width="16"> HT1</span>
-            </div>
-            <div id="m-region" class="modal-region">NA</div>
-
-            <div class="modal-links-row">
-                <a id="m-namemc" href="#" target="_blank" class="modal-link-btn">
-                    <img src="https://mctiers.gg/tier_icons/nethop.svg" width="14"> NameMC ↗
-                </a>
-                <a id="m-profile-link" href="#" target="_blank" class="modal-link-btn">
-                    View full profile ↗
-                </a>
-            </div>
-
-            <div class="modal-rank-box">
-                <span class="modal-rank-label">Position</span>
-                <div class="modal-rank-content">
-                    <span id="m-rank-pos" class="modal-rank-num">#1</span>
-                    <span class="modal-overall-pill">🏆 OVERALL (<span id="m-pts">60</span> points)</span>
+            <div class="modal-stats-grid">
+                <div class="m-stat-box">
+                    <span class="m-stat-label">Total Points</span>
+                    <span id="m-pts" class="m-stat-val"></span>
+                </div>
+                <div class="m-stat-box">
+                    <span class="m-stat-label">Region</span>
+                    <span id="m-region" class="m-stat-val"></span>
                 </div>
             </div>
-
-            <div class="modal-tiers-title">Tiers</div>
-            <div class="modal-tiers-row">
-                <div class="modal-tier-slot" style="color: var(--t1);">HT1</div>
-                <div class="modal-tier-slot">-</div>
-                <div class="modal-tier-slot">-</div>
-                <div class="modal-tier-slot">-</div>
-                <div class="modal-tier-slot">-</div>
-                <div class="modal-tier-slot">-</div>
-                <div class="modal-tier-slot">-</div>
-                <div class="modal-tier-slot">-</div>
-            </div>
         </div>
+    </div>
+
+    <!-- RIGHT CLICK CONTEXT POPUP BLOCK -->
+    <div id="context-menu" class="context-menu">
+        <div class="context-menu-title" id="cm-name">Player Name</div>
+        <div class="context-menu-item"><img src="https://mctiers.gg/tier_icons/nethop.svg" width="16"> Rank Tier: <span id="cm-tier" style="color:#fff; font-weight:800;"></span></div>
+        <div class="context-menu-item">Points: <span id="cm-pts" style="color:#fff; font-weight:800;"></span></div>
+        <div class="context-menu-item">Region: <span id="cm-region" style="color:#fff; font-weight:800;"></span></div>
     </div>
 
     <script type="module">
@@ -294,9 +272,9 @@
                 let rawTier = (p.tier || "LT5").toUpperCase();
                 let cleanTier = rawTier.replace('R', '').replace(/[^H|L|T|1-5]/g, ""); 
                 return { ...p, pts: POINT_MAP[cleanTier] || 0, col: cleanTier.match(/\d/)?.[0] || "5", displayTier: rawTier };
-            }).sort((a,b) => b.pts - a.pts);
+            });
 
-            const leaderboard = allProcessed.slice(0, 10);
+            const leaderboard = [...allProcessed].sort((a,b) => b.pts - a.pts).slice(0, 10);
             
             // Render Intro Top 3 Preview
             const introTop3 = document.getElementById("intro-top3-container");
@@ -308,7 +286,7 @@
                     introTop3.innerHTML = "";
                     top3.forEach((p, i) => {
                         introTop3.innerHTML += `
-                            <div class="top-player-card" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}', ${i+1})">
+                            <div class="top-player-card" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')" oncontextmenu="openContextMenu(event, '${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')">
                                 <div class="tp-rank ${i===1?'tp-rank-2':i===2?'tp-rank-3':''}">#${i+1}</div>
                                 <img src="https://mc-heads.net/avatar/${p.name}/40" style="border-radius:8px;">
                                 <div style="flex-grow:1;">
@@ -330,7 +308,7 @@
                 } else {
                     leaderboard.forEach((p, i) => {
                         overall.innerHTML += `
-                            <div class="rank-item" id="player-${p.name.toLowerCase()}" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}', ${i+1})">
+                            <div class="rank-item" id="player-${p.name.toLowerCase()}" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')" oncontextmenu="openContextMenu(event, '${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')">
                                 <div class="rank-pos">#${i+1}</div>
                                 <img src="https://mc-heads.net/avatar/${p.name}/44" style="border-radius:10px;">
                                 <div style="flex-grow:1">
@@ -352,27 +330,21 @@
                 grid.innerHTML = "";
                 ["1", "2", "3", "4", "5"].forEach(num => {
                     let colHtml = `<div class="tier-col"><div class="col-header" style="background:var(--t${num})">Tier ${num}</div>`;
-                    const tierGroup = allProcessed.filter(p => p.col === num);
+                    const tierGroup = allProcessed.filter(p => p.col === num).sort((a, b) => b.pts - a.pts);
                     tierGroup.forEach(p => {
-                        const globalRank = allProcessed.findIndex(x => x.name === p.name) + 1;
-                        colHtml += `<div class="player-strip" id="strip-${p.name.toLowerCase()}" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}', ${globalRank})"><img src="https://mc-heads.net/avatar/${p.name}/22" style="border-radius:4px;"> ${p.name}</div>`;
+                        colHtml += `<div class="player-strip" id="strip-${p.name.toLowerCase()}" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')" oncontextmenu="openContextMenu(event, '${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')"><img src="https://mc-heads.net/avatar/${p.name}/22" style="border-radius:4px;"> ${p.name}</div>`;
                     });
                     grid.innerHTML += colHtml + '</div>';
                 });
             }
         };
 
-        // Advanced Search that switches to rankings and glows matching card
+        // Search logic that highlights without removing players from DOM
         window.handleSearch = function() {
             const query = document.getElementById("search").value.toLowerCase().trim();
             document.querySelectorAll('.highlighted').forEach(el => el.classList.remove('highlighted'));
 
             if (!query) return;
-
-            // Automatically switch to rankings view so user can see search results
-            if (window.activeTab === 'intro') {
-                switchView('overall');
-            }
 
             let firstMatch = null;
             window.players.forEach(p => {
@@ -389,27 +361,40 @@
             }
         };
 
-        window.openModal = function(name, tier, pts, region, rank) {
+        window.openModal = function(name, tier, pts, region) {
             document.getElementById("m-name").innerText = name;
             document.getElementById("m-pts").innerText = pts;
             document.getElementById("m-region").innerText = region || "NA";
-            document.getElementById("m-rank-pos").innerText = `#${rank || 'N/A'}`;
-            
             const pill = document.getElementById("m-tier-pill");
-            pill.innerHTML = `<img src="https://mctiers.gg/tier_icons/nethop.svg" width="16"> ${tier}`;
+            pill.innerHTML = `<img src="https://mctiers.gg/tier_icons/nethop.svg" width="18"> ${tier}`;
             const tierNum = tier.replace('R', '').match(/\d/)?.[0] || "5";
             pill.style.background = `var(--t${tierNum})`;
-            
             document.getElementById("m-bust").src = `https://render.crafty.gg/3d/bust/${name}`;
-            document.getElementById("m-namemc").href = `https://namemc.com/search?q=${name}`;
-            document.getElementById("m-profile-link").href = `https://namemc.com/search?q=${name}`;
-            
             document.getElementById("modal-overlay").classList.add("open");
         };
 
         window.closeModal = function(e) { 
             if(e.target.id === 'modal-overlay') document.getElementById("modal-overlay").classList.remove("open"); 
         };
+
+        // Custom Right Click Popup
+        window.openContextMenu = function(e, name, tier, pts, region) {
+            e.preventDefault();
+            const cm = document.getElementById("context-menu");
+            document.getElementById("cm-name").innerText = name;
+            document.getElementById("cm-tier").innerText = tier;
+            document.getElementById("cm-pts").innerText = pts;
+            document.getElementById("cm-region").innerText = region || "NA";
+
+            cm.style.left = `${e.clientX}px`;
+            cm.style.top = `${e.clientY}px`;
+            cm.style.display = "block";
+        };
+
+        document.addEventListener("click", () => {
+            const cm = document.getElementById("context-menu");
+            if (cm) cm.style.display = "none";
+        });
 
         const playersRef = ref(db, 'players');
         onValue(playersRef, (snapshot) => {
