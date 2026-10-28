@@ -72,16 +72,22 @@
             margin-bottom: 12px; transition: 0.2s; cursor: pointer; 
         }
         .rank-item:hover { transform: translateY(-2px); border-color: #3f3f46; background: #1a1a1e; }
+        .rank-item.highlighted { border-color: var(--accent); box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
         .rank-pos { font-size: 26px; font-weight: 900; width: 50px; text-align: center; color: var(--text-muted); }
         
         .p-title { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
         .title-1 { color: #facc15; } .title-2 { color: #f87171; } .title-3 { color: #60a5fa; } .title-4 { color: #a1a1aa; }
 
-        .tier-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; }
+        /* Responsive Grid fix for Mobile */
+        .tier-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; }
+        @media(max-width: 1024px) {
+            .tier-grid { grid-template-columns: 1fr; }
+        }
         .tier-col { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; height: fit-content; padding-bottom: 10px; }
         .col-header { padding: 14px; text-align: center; font-weight: 900; font-size: 12px; text-transform: uppercase; }
         .player-strip { display: flex; align-items: center; gap: 10px; padding: 10px; margin: 6px 10px; background: var(--bg-strip); border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .player-strip:hover { background: #27272a; }
+        .player-strip.highlighted { border: 1px solid var(--accent); background: #27272a; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 200; display: none; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; }
         .modal-overlay.open { display: flex; opacity: 1; }
@@ -92,13 +98,22 @@
         .m-stat-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 18px; border-radius: 20px; }
         .m-stat-label { font-size: 10px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 6px; }
         .m-stat-val { font-size: 20px; font-weight: 900; }
+
+        /* Right Click Context Menu Popup */
+        .context-menu {
+            position: fixed; z-index: 300; background: #18181b; border: 1px solid var(--border);
+            border-radius: 12px; padding: 12px 16px; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+            min-width: 180px;
+        }
+        .context-menu-title { font-size: 14px; font-weight: 800; color: #fff; margin-bottom: 6px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+        .context-menu-item { font-size: 12px; color: var(--text-muted); margin: 4px 0; font-weight: 600; display: flex; align-items: center; gap: 6px; }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
         <a class="nav-brand" onclick="switchView('intro')">
-            <img src="https://mctiers.com/tier_icons/nethop.svg" width="30"> NETHTIERS
+            <img src="https://mctiers.gg/tier_icons/nethop.svg" width="30" alt="Nethpot Icon"> NETHTIERS
         </a>
         <div class="nav-right-group">
             <div class="nav-links">
@@ -158,7 +173,7 @@
         <div id="view-rankings-wrapper" style="display:none;">
             <div class="search-row">
                 <h2 id="view-title" class="view-label">Top 10</h2>
-                <input type="text" id="search" class="search-input" placeholder="Search for a player..." onkeyup="renderViews()">
+                <input type="text" id="search" class="search-input" placeholder="Search for a player..." oninput="handleSearch()">
             </div>
 
             <div id="view-overall"></div>
@@ -166,6 +181,7 @@
         </div>
     </div>
 
+    <!-- MODAL -->
     <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
         <div class="modal-card">
             <button onclick="document.getElementById('modal-overlay').classList.remove('open')" style="position:absolute; top:20px; right:25px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-weight:800;">✕</button>
@@ -184,6 +200,14 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- RIGHT CLICK CONTEXT POPUP BLOCK -->
+    <div id="context-menu" class="context-menu">
+        <div class="context-menu-title" id="cm-name">Player Name</div>
+        <div class="context-menu-item"><img src="https://mctiers.gg/tier_icons/nethop.svg" width="16"> Rank Tier: <span id="cm-tier" style="color:#fff; font-weight:800;"></span></div>
+        <div class="context-menu-item">Points: <span id="cm-pts" style="color:#fff; font-weight:800;"></span></div>
+        <div class="context-menu-item">Region: <span id="cm-region" style="color:#fff; font-weight:800;"></span></div>
     </div>
 
     <script type="module">
@@ -244,14 +268,11 @@
         }
 
         window.renderViews = function() {
-            const searchInput = document.getElementById("search");
-            const query = searchInput ? searchInput.value.toLowerCase() : "";
-            
             const allProcessed = window.players.map(p => {
                 let rawTier = (p.tier || "LT5").toUpperCase();
                 let cleanTier = rawTier.replace('R', '').replace(/[^H|L|T|1-5]/g, ""); 
                 return { ...p, pts: POINT_MAP[cleanTier] || 0, col: cleanTier.match(/\d/)?.[0] || "5", displayTier: rawTier };
-            }).filter(p => p.name && p.name.toLowerCase().includes(query));
+            });
 
             const leaderboard = [...allProcessed].sort((a,b) => b.pts - a.pts).slice(0, 10);
             
@@ -265,7 +286,7 @@
                     introTop3.innerHTML = "";
                     top3.forEach((p, i) => {
                         introTop3.innerHTML += `
-                            <div class="top-player-card" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')">
+                            <div class="top-player-card" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')" oncontextmenu="openContextMenu(event, '${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')">
                                 <div class="tp-rank ${i===1?'tp-rank-2':i===2?'tp-rank-3':''}">#${i+1}</div>
                                 <img src="https://mc-heads.net/avatar/${p.name}/40" style="border-radius:8px;">
                                 <div style="flex-grow:1;">
@@ -287,7 +308,7 @@
                 } else {
                     leaderboard.forEach((p, i) => {
                         overall.innerHTML += `
-                            <div class="rank-item" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')">
+                            <div class="rank-item" id="player-${p.name.toLowerCase()}" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')" oncontextmenu="openContextMenu(event, '${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')">
                                 <div class="rank-pos">#${i+1}</div>
                                 <img src="https://mc-heads.net/avatar/${p.name}/44" style="border-radius:10px;">
                                 <div style="flex-grow:1">
@@ -311,10 +332,32 @@
                     let colHtml = `<div class="tier-col"><div class="col-header" style="background:var(--t${num})">Tier ${num}</div>`;
                     const tierGroup = allProcessed.filter(p => p.col === num).sort((a, b) => b.pts - a.pts);
                     tierGroup.forEach(p => {
-                        colHtml += `<div class="player-strip" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')"><img src="https://mc-heads.net/avatar/${p.name}/22" style="border-radius:4px;"> ${p.name}</div>`;
+                        colHtml += `<div class="player-strip" id="strip-${p.name.toLowerCase()}" onclick="openModal('${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')" oncontextmenu="openContextMenu(event, '${p.name}', '${p.displayTier}', ${p.pts}, '${p.region}')"><img src="https://mc-heads.net/avatar/${p.name}/22" style="border-radius:4px;"> ${p.name}</div>`;
                     });
                     grid.innerHTML += colHtml + '</div>';
                 });
+            }
+        };
+
+        // Search logic that highlights without removing players from DOM
+        window.handleSearch = function() {
+            const query = document.getElementById("search").value.toLowerCase().trim();
+            document.querySelectorAll('.highlighted').forEach(el => el.classList.remove('highlighted'));
+
+            if (!query) return;
+
+            let firstMatch = null;
+            window.players.forEach(p => {
+                if (p.name && p.name.toLowerCase().includes(query)) {
+                    const item = document.getElementById(`player-${p.name.toLowerCase()}`);
+                    const strip = document.getElementById(`strip-${p.name.toLowerCase()}`);
+                    if (item) { item.classList.add('highlighted'); if(!firstMatch) firstMatch = item; }
+                    if (strip) { strip.classList.add('highlighted'); if(!firstMatch) firstMatch = strip; }
+                }
+            });
+
+            if (firstMatch) {
+                firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         };
 
@@ -323,7 +366,7 @@
             document.getElementById("m-pts").innerText = pts;
             document.getElementById("m-region").innerText = region || "NA";
             const pill = document.getElementById("m-tier-pill");
-            pill.innerText = `🛡️ ${tier}`;
+            pill.innerHTML = `<img src="https://mctiers.gg/tier_icons/nethop.svg" width="18"> ${tier}`;
             const tierNum = tier.replace('R', '').match(/\d/)?.[0] || "5";
             pill.style.background = `var(--t${tierNum})`;
             document.getElementById("m-bust").src = `https://render.crafty.gg/3d/bust/${name}`;
@@ -334,21 +377,34 @@
             if(e.target.id === 'modal-overlay') document.getElementById("modal-overlay").classList.remove("open"); 
         };
 
-        // Realtime Listener
+        // Custom Right Click Popup
+        window.openContextMenu = function(e, name, tier, pts, region) {
+            e.preventDefault();
+            const cm = document.getElementById("context-menu");
+            document.getElementById("cm-name").innerText = name;
+            document.getElementById("cm-tier").innerText = tier;
+            document.getElementById("cm-pts").innerText = pts;
+            document.getElementById("cm-region").innerText = region || "NA";
+
+            cm.style.left = `${e.clientX}px`;
+            cm.style.top = `${e.clientY}px`;
+            cm.style.display = "block";
+        };
+
+        document.addEventListener("click", () => {
+            const cm = document.getElementById("context-menu");
+            if (cm) cm.style.display = "none";
+        });
+
         const playersRef = ref(db, 'players');
         onValue(playersRef, (snapshot) => {
             const data = snapshot.val();
-            if (data) {
-                window.players = Object.values(data);
-            } else {
-                window.players = [];
-            }
+            window.players = data ? Object.values(data) : [];
             renderViews();
         }, (error) => {
             console.error("Firebase Read Error:", error);
         });
 
-        // Initialize view safely
         window.switchView('intro');
     </script>
 </body>
